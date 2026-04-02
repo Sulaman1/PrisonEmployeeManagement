@@ -1,0 +1,446 @@
+@model PrisonEmployeeManagement.Models.Employee
+@{
+    ViewData["Title"] = "Employee Details - " + Model.FullName;
+}
+
+<div class="container-fluid mt-4">
+    <!-- Employee Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h2>@Model.FullName</h2>
+                            <h5>@Model.Position - @Model.Department</h5>
+                            <p class="mb-0">Employee ID: @Model.EmployeeNumber | Badge: @Model.BadgeNumber</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-@(Model.EmploymentStatus == "Active" ? "success" : "danger")" style="font-size: 1.2rem;">
+                                @Model.EmploymentStatus
+                            </span>
+                            <p class="mt-2 mb-0">Years of Service: @Model.YearsOfService.ToString("F1") years</p>
+                            <p>Current Posting: @Model.CurrentPosting</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6>Total Good Conducts</h6>
+                    <h3>@Model.ConductRecords.Count(c => c.ConductType == "Good")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6>Total Disciplinary Cases</h6>
+                    <h3>@Model.ConductRecords.Count(c => c.ConductType == "Bad")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>Awards Received</h6>
+                    <h3>@Model.Awards.Count</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <h6>Trainings Completed</h6>
+                    <h3>@Model.Trainings.Count(t => t.Status == "Completed")</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs for Different Sections -->
+    <ul class="nav nav-tabs" id="employeeTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">
+                <i class="fas fa-user"></i> Personal Info
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="postings-tab" data-bs-toggle="tab" data-bs-target="#postings" type="button" role="tab">
+                <i class="fas fa-map-marker-alt"></i> Posting History
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="conduct-tab" data-bs-toggle="tab" data-bs-target="#conduct" type="button" role="tab">
+                <i class="fas fa-gavel"></i> Conduct Records
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="training-tab" data-bs-toggle="tab" data-bs-target="#training" type="button" role="tab">
+                <i class="fas fa-graduation-cap"></i> Training & Awards
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="leave-tab" data-bs-toggle="tab" data-bs-target="#leave" type="button" role="tab">
+                <i class="fas fa-calendar-alt"></i> Leave Records
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content p-3 border border-top-0 rounded-bottom" id="employeeTabsContent">
+        <!-- Personal Information Tab -->
+        <div class="tab-pane fade show active" id="personal" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <a asp-controller="EFiles" asp-action="Index" asp-route-employeeId="@Model.Id" class="btn btn-primary">
+                            <i class="fas fa-folder-open"></i> View Employee Files
+                        </a>
+                        <a asp-controller="EFiles" asp-action="Create" asp-route-employeeId="@Model.Id" class="btn btn-success">
+                            <i class="fas fa-upload"></i> Upload File for Employee
+                        </a>
+                    </div>
+                    <h5>Personal Details</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Full Name:</dt>
+                        <dd class="col-sm-8">@Model.FullName</dd>
+                        
+                        <dt class="col-sm-4">Date of Birth:</dt>
+                        <dd class="col-sm-8">@Model.DateOfBirth.ToString("MM/dd/yyyy") (Age: @Model.Age)</dd>
+                        
+                        <dt class="col-sm-4">Gender:</dt>
+                        <dd class="col-sm-8">@Model.Gender</dd>
+                        
+                        <dt class="col-sm-4">National ID:</dt>
+                        <dd class="col-sm-8">@Model.NationalId</dd>
+                        
+                        <dt class="col-sm-4">Blood Type:</dt>
+                        <dd class="col-sm-8">@Model.BloodType</dd>
+                        
+                        <dt class="col-sm-4">Languages:</dt>
+                        <dd class="col-sm-8">@Model.Languages</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <h5>Contact Information</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Email:</dt>
+                        <dd class="col-sm-8">@Model.Email</dd>
+                        
+                        <dt class="col-sm-4">Phone:</dt>
+                        <dd class="col-sm-8">@Model.PhoneNumber</dd>
+                        
+                        <dt class="col-sm-4">Alternative Phone:</dt>
+                        <dd class="col-sm-8">@Model.AlternativePhone</dd>
+                        
+                        <dt class="col-sm-4">Address:</dt>
+                        <dd class="col-sm-8">@Model.Address</dd>
+                        
+                        <dt class="col-sm-4">City/State:</dt>
+                        <dd class="col-sm-8">@Model.City, @Model.State @Model.ZipCode</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h5>Employment Information</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Employee Type:</dt>
+                        <dd class="col-sm-8">@Model.EmployeeType</dd>
+                        
+                        <dt class="col-sm-4">Rank/Grade:</dt>
+                        <dd class="col-sm-8">@Model.Rank</dd>
+                        
+                        <dt class="col-sm-4">Hire Date:</dt>
+                        <dd class="col-sm-8">@Model.HireDate.ToString("MM/dd/yyyy")</dd>
+                        
+                        <dt class="col-sm-4">Confirmation Date:</dt>
+                        <dd class="col-sm-8">@(Model.ConfirmationDate?.ToString("MM/dd/yyyy") ?? "N/A")</dd>
+                        
+                        <dt class="col-sm-4">Years of Service:</dt>
+                        <dd class="col-sm-8">@Model.YearsOfService.ToString("F1") years</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <h5>Security Information</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Security Clearance:</dt>
+                        <dd class="col-sm-8">@Model.SecurityClearanceLevel</dd>
+                        
+                        <dt class="col-sm-4">Clearance Expiry:</dt>
+                        <dd class="col-sm-8">@(Model.ClearanceExpiryDate?.ToString("MM/dd/yyyy") ?? "N/A")</dd>
+                        
+                        <dt class="col-sm-4">Badge Number:</dt>
+                        <dd class="col-sm-8">@Model.BadgeNumber</dd>
+                        
+                        <dt class="col-sm-4">Current Shift:</dt>
+                        <dd class="col-sm-8">@Model.ShiftSchedule</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <h5>Emergency Contact</h5>
+                    <dl class="row">
+                        <dt class="col-sm-2">Name:</dt>
+                        <dd class="col-sm-4">@Model.EmergencyContactName</dd>
+                        
+                        <dt class="col-sm-2">Phone:</dt>
+                        <dd class="col-sm-4">@Model.EmergencyContactPhone</dd>
+                        
+                        <dt class="col-sm-2">Relationship:</dt>
+                        <dd class="col-sm-10">@Model.EmergencyContactRelationship</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posting History Tab -->
+        <div class="tab-pane fade" id="postings" role="tabpanel">
+            <h5>Posting History</h5>
+            <div class="mb-3">
+                <a asp-controller="Postings" asp-action="Create" asp-route-employeeId="@Model.Id" class="btn btn-sm btn-success">Add Posting</a>
+                <a asp-controller="Postings" asp-action="Index" asp-route-employeeId="@Model.Id" class="btn btn-sm btn-info">Manage Postings</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Location/Facility</th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Rank at Posting</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var posting in Model.Postings.OrderByDescending(p => p.StartDate))
+                        {
+                            <tr class="@(posting.IsCurrent ? "table-success" : "")">
+                                <td>@posting.Location</td>
+                                <td>@posting.Department</td>
+                                <td>@posting.Position</td>
+                                <td>@posting.RankAtPosting</td>
+                                <td>@posting.StartDate.ToString("MM/dd/yyyy")</td>
+                                <td>@(posting.EndDate?.ToString("MM/dd/yyyy") ?? "Present")</td>
+                                <td>
+                                    @if (posting.IsCurrent)
+                                    {
+                                        <span class="badge bg-success">Current</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Previous</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Conduct Records Tab -->
+        <div class="tab-pane fade" id="conduct" role="tabpanel">
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <a asp-controller="Conduct" asp-action="Create" asp-route-employeeId="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Conduct Record
+                    </a>
+                </div>
+            </div>
+            
+            <h5>Good Conduct Records</h5>
+            <div class="table-responsive mb-4">
+                <table class="table table-striped table-success">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Title</th>
+                            <th>Award/Recognition</th>
+                            <th>Issued By</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var conduct in Model.ConductRecords.Where(c => c.ConductType == "Good").OrderByDescending(c => c.IncidentDate))
+                        {
+                            <tr>
+                                <td>@conduct.IncidentDate.ToString("MM/dd/yyyy")</td>
+                                <td>@conduct.Category</td>
+                                <td>@conduct.Title</td>
+                                <td>@conduct.AwardType</td>
+                                <td>@conduct.IssuedBy</td>
+                                <td><span class="badge bg-success">@conduct.Status</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <h5>Disciplinary Records</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-danger">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Title</th>
+                            <th>Severity</th>
+                            <th>Action Taken</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var conduct in Model.ConductRecords.Where(c => c.ConductType == "Bad").OrderByDescending(c => c.IncidentDate))
+                        {
+                            <tr>
+                                <td>@conduct.IncidentDate.ToString("MM/dd/yyyy")</td>
+                                <td>@conduct.Category</td>
+                                <td>@conduct.Title</td>
+                                <td>
+                                    <span class="badge bg-@(conduct.Severity == "Critical" ? "danger" : conduct.Severity == "Serious" ? "warning" : "info")">
+                                        @conduct.Severity
+                                    </span>
+                                </td>
+                                <td>@conduct.DisciplinaryAction</td>
+                                <td><span class="badge bg-@(conduct.Status == "Resolved" ? "success" : "warning")">@conduct.Status</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Training & Awards Tab -->
+        <div class="tab-pane fade" id="training" role="tabpanel">
+            <h5>Training History</h5>
+            <div class="mb-3">
+                <a asp-controller="Training" asp-action="CreateTraining" asp-route-employeeId="@Model.Id" class="btn btn-sm btn-success">Add Training</a>
+                <a asp-controller="Training" asp-action="CreateAward" asp-route-employeeId="@Model.Id" class="btn btn-sm btn-info">Add Award</a>
+                <a asp-controller="Training" asp-action="Index" asp-route-employeeId="@Model.Id" class="btn btn-sm btn-primary">Manage All</a>
+            </div>
+            <div class="table-responsive mb-4">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Training Name</th>
+                            <th>Provider</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Certificate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var training in Model.Trainings.OrderByDescending(t => t.StartDate))
+                        {
+                            <tr>
+                                <td>@training.TrainingName</td>
+                                <td>@training.Provider</td>
+                                <td>@training.StartDate.ToString("MM/dd/yyyy")</td>
+                                <td>@(training.EndDate?.ToString("MM/dd/yyyy") ?? "In Progress")</td>
+                                <td><span class="badge bg-@(training.Status == "Completed" ? "success" : "info")">@training.Status</span></td>
+                                <td>@training.CertificateNumber</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <h5>Awards & Recognitions</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Award Name</th>
+                            <th>Category</th>
+                            <th>Presented By</th>
+                            <th>Certificate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var award in Model.Awards.OrderByDescending(a => a.AwardDate))
+                        {
+                            <tr>
+                                <td>@award.AwardDate.ToString("MM/dd/yyyy")</td>
+                                <td>@award.AwardName</td>
+                                <td>@award.Category</td>
+                                <td>@award.PresentedBy</td>
+                                <td>@award.CertificateNumber</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Leave Records Tab -->
+        <div class="tab-pane fade" id="leave" role="tabpanel">
+            <div class="mb-3">
+                <a asp-controller="Leaves" asp-action="Create" asp-route-employeeId="@Model.Id" class="btn btn-sm btn-success">Request Leave</a>
+                <a asp-controller="Leaves" asp-action="Index" asp-route-employeeId="@Model.Id" class="btn btn-sm btn-info">Manage Leaves</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Leave Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Total Days</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var leave in Model.Leaves.OrderByDescending(l => l.StartDate))
+                        {
+                            <tr>
+                                <td>@leave.LeaveType</td>
+                                <td>@leave.StartDate.ToString("MM/dd/yyyy")</td>
+                                <td>@leave.EndDate.ToString("MM/dd/yyyy")</td>
+                                <td>@leave.TotalDays</td>
+                                <td>
+                                    <span class="badge bg-@(leave.Status == "Approved" ? "success" : leave.Status == "Pending" ? "warning" : "danger")">
+                                        @leave.Status
+                                    </span>
+                                </td>
+                                <td>@leave.Reason</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit Employee</a>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

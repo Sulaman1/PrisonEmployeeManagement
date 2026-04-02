@@ -1,0 +1,36 @@
+@model IEnumerable<PrisonEmployeeManagement.Models.FileAccessLog>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Access Time</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>IP Address</th>
+                 </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td>@log.AccessTime.ToString("MM/dd/yyyy HH:mm:ss")</td>
+                        <td>@log.AccessedBy</td>
+                        <td>
+                            <span class="badge bg-@(log.Action == "View" ? "info" : log.Action == "Download" ? "success" : "secondary")">
+                                @log.Action
+                            </span>
+                        </td>
+                        <td>@log.IPAddress</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">No access logs available.</div>
+}

@@ -1,0 +1,90 @@
+@model PrisonEmployeeManagement.Models.EmployeeTraining
+@{
+    ViewData["Title"] = "Edit Training";
+}
+
+<div class="card">
+    <div class="card-header bg-warning text-white">
+        <h3>Edit Training Record</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="EditTraining" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EmployeeId" />
+            <input type="hidden" asp-for="CreatedAt" />
+            
+            <div class="form-group mb-3">
+                <label asp-for="TrainingName" class="fw-bold"></label>
+                <input asp-for="TrainingName" class="form-control" required />
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Provider" class="fw-bold"></label>
+                <input asp-for="Provider" class="form-control" />
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="TrainingType" class="fw-bold"></label>
+                <select asp-for="TrainingType" class="form-control" asp-items="ViewBag.TrainingTypes"></select>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="StartDate" class="fw-bold"></label>
+                        <input asp-for="StartDate" class="form-control" type="date" required />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="EndDate" class="fw-bold"></label>
+                        <input asp-for="EndDate" class="form-control" type="date" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="DurationHours" class="fw-bold"></label>
+                <input asp-for="DurationHours" class="form-control" type="number" />
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="CertificateNumber" class="fw-bold"></label>
+                        <input asp-for="CertificateNumber" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="CertificateExpiry" class="fw-bold"></label>
+                        <input asp-for="CertificateExpiry" class="form-control" type="date" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Status" class="fw-bold"></label>
+                        <select asp-for="Status" class="form-control" asp-items="ViewBag.Statuses"></select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Score" class="fw-bold"></label>
+                        <input asp-for="Score" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Remarks" class="fw-bold"></label>
+                <textarea asp-for="Remarks" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="Index" asp-route-employeeId="@Model.EmployeeId" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

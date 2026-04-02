@@ -1,0 +1,202 @@
+@model PrisonEmployeeManagement.Models.EmployeeConduct
+@{
+    ViewData["Title"] = "Add Conduct Record";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Add Conduct Record for @ViewBag.EmployeeName</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="EmployeeId" />
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="ConductType" class="control-label"></label>
+                            <select asp-for="ConductType" class="form-control" asp-items="ViewBag.ConductTypes" id="ConductType">
+                                <option value="">Select Conduct Type</option>
+                            </select>
+                            <span asp-validation-for="ConductType" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="IncidentDate" class="control-label"></label>
+                            <input asp-for="IncidentDate" class="form-control" type="date" />
+                            <span asp-validation-for="IncidentDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3" id="CategoryGood" style="display: none;">
+                            <label asp-for="Category" class="control-label">Award/Recognition Category</label>
+                            <select asp-for="Category" class="form-control" asp-items="ViewBag.GoodCategories">
+                                <option value="">Select Category</option>
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3" id="CategoryBad" style="display: none;">
+                            <label asp-for="Category" class="control-label">Violation Category</label>
+                            <select asp-for="Category" class="form-control" asp-items="ViewBag.BadCategories">
+                                <option value="">Select Category</option>
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Title" class="control-label"></label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label asp-for="Description" class="control-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                
+                <!-- Good Conduct Fields -->
+                <div id="GoodFields" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="AwardType" class="control-label"></label>
+                                <input asp-for="AwardType" class="form-control" placeholder="e.g., Certificate of Commendation, Medal of Honor" />
+                                <span asp-validation-for="AwardType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="CertificateNumber" class="control-label"></label>
+                                <input asp-for="CertificateNumber" class="form-control" />
+                                <span asp-validation-for="CertificateNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="IssuedBy" class="control-label"></label>
+                                <input asp-for="IssuedBy" class="form-control" />
+                                <span asp-validation-for="IssuedBy" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bad Conduct Fields -->
+                <div id="BadFields" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Severity" class="control-label"></label>
+                                <select asp-for="Severity" class="form-control" asp-items="ViewBag.SeverityLevels">
+                                    <option value="">Select Severity</option>
+                                </select>
+                                <span asp-validation-for="Severity" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="DisciplinaryAction" class="control-label"></label>
+                                <input asp-for="DisciplinaryAction" class="form-control" placeholder="e.g., Written Warning, Suspension, Demotion" />
+                                <span asp-validation-for="DisciplinaryAction" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ActionTaken" class="control-label"></label>
+                                <textarea asp-for="ActionTaken" class="form-control" rows="2" placeholder="Describe the action taken"></textarea>
+                                <span asp-validation-for="ActionTaken" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Witnesses" class="control-label"></label>
+                                <input asp-for="Witnesses" class="form-control" />
+                                <span asp-validation-for="Witnesses" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Status" class="control-label"></label>
+                            <select asp-for="Status" class="form-control" asp-items="ViewBag.Statuses"></select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="ResolutionDate" class="control-label"></label>
+                            <input asp-for="ResolutionDate" class="form-control" type="date" />
+                            <span asp-validation-for="ResolutionDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label asp-for="Remarks" class="control-label"></label>
+                    <textarea asp-for="Remarks" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Remarks" class="text-danger"></span>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label asp-for="SupportingDocuments" class="control-label"></label>
+                    <input asp-for="SupportingDocuments" class="form-control" placeholder="Document references or file paths" />
+                    <span asp-validation-for="SupportingDocuments" class="text-danger"></span>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Save Record</button>
+                    <a asp-action="Details" asp-controller="Employees" asp-route-id="@Model.EmployeeId" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            toggleConductFields();
+            
+            $('#ConductType').change(function() {
+                toggleConductFields();
+            });
+        });
+        
+        function toggleConductFields() {
+            var conductType = $('#ConductType').val();
+            
+            if (conductType === 'Good') {
+                $('#CategoryGood').show();
+                $('#CategoryBad').hide();
+                $('#GoodFields').show();
+                $('#BadFields').hide();
+            } else if (conductType === 'Bad') {
+                $('#CategoryGood').hide();
+                $('#CategoryBad').show();
+                $('#GoodFields').hide();
+                $('#BadFields').show();
+            } else {
+                $('#CategoryGood, #CategoryBad, #GoodFields, #BadFields').hide();
+            }
+        }
+    </script>
+}

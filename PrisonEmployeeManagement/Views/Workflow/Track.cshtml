@@ -1,0 +1,150 @@
+@model PrisonEmployeeManagement.Models.FileWorkflow
+@{
+    ViewData["Title"] = "Track Workflow";
+    var remarks = ViewBag.Remarks as List<PrisonEmployeeManagement.Models.FileWorkflowRemark>;
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3><i class="fas fa-chart-line"></i> Workflow Tracking: @Model.WorkflowNumber</h3>
+    </div>
+    <div class="card-body">
+        <div class="progress mb-4">
+            @{
+                var steps = new[] { "Sent", "Received", "In Progress", "Completed" };
+                var currentStep = Model.Status == "Pending" ? 1 :
+                                 Model.Status == "In Progress" ? 2 :
+                                 Model.Status == "Completed" ? 3 : 0;
+            }
+            <div class="progress-bar bg-success" style="width: @(currentStep * 25)%">
+                @currentStep/4 Steps
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5>File Information</h5>
+                <dl class="row">
+                    <dt class="col-sm-4">File Number:</dt>
+                    <dd class="col-sm-8">@Model.File?.FileNumber</dd>
+                    
+                    <dt class="col-sm-4">File Title:</dt>
+                    <dd class="col-sm-8">@Model.File?.FileTitle</dd>
+                    
+                    <dt class="col-sm-4">From:</dt>
+                    <dd class="col-sm-8">@Model.FromEmployee?.FullName (@Model.FromDepartment)</dd>
+                    
+                    <dt class="col-sm-4">To:</dt>
+                    <dd class="col-sm-8">@Model.ToEmployee?.FullName (@Model.ToDepartment)</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <h5>Status Information</h5>
+                <dl class="row">
+                    <dt class="col-sm-4">Current Status:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-@(Model.Status == "Completed" ? "success" : 
+                                              Model.Status == "Pending" ? "warning" : "info")">
+                            @Model.Status
+                        </span>
+                    </dd>
+                    
+                    <dt class="col-sm-4">Sent Date:</dt>
+                    <dd class="col-sm-8">@Model.SentDate.ToString("MM/dd/yyyy HH:mm")</dd>
+                    
+                    <dt class="col-sm-4">Received Date:</dt>
+                    <dd class="col-sm-8">@(Model.ReceivedDate?.ToString("MM/dd/yyyy HH:mm") ?? "Not yet received")</dd>
+                    
+                    <dt class="col-sm-4">Due Date:</dt>
+                    <dd class="col-sm-8">@(Model.DueDate?.ToString("MM/dd/yyyy") ?? "N/A")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <h5>Timeline</h5>
+        <div class="timeline">
+            @if (remarks != null)
+            {
+                foreach (var remark in remarks.OrderBy(r => r.CreatedAt))
+                {
+                    <div class="timeline-item">
+                        <div class="timeline-badge bg-@(remark.ActionType == "Send" ? "primary" : 
+                                                       remark.ActionType == "Receive" ? "info" :
+                                                       remark.ActionType == "Approve" ? "success" :
+                                                       remark.ActionType == "Reject" ? "danger" : "secondary")">
+                            <i class="fas fa-@(remark.ActionType == "Send" ? "paper-plane" :
+                                               remark.ActionType == "Receive" ? "inbox" :
+                                               remark.ActionType == "Approve" ? "check" :
+                                               remark.ActionType == "Reject" ? "times" : "comment")"></i>
+                        </div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h5 class="timeline-title">@remark.ActionType</h5>
+                                <p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-user"></i> @remark.Employee?.FullName |
+                                        <i class="fas fa-clock"></i> @remark.CreatedAt.ToString("MM/dd/yyyy HH:mm")
+                                    </small>
+                                </p>
+                            </div>
+                            <div class="timeline-body">
+                                <p>@remark.Remark</p>
+                                @if (!string.IsNullOrEmpty(remark.AttachmentPath))
+                                {
+                                    <a href="@remark.AttachmentPath" target="_blank" class="btn btn-sm btn-link">
+                                        <i class="fas fa-paperclip"></i> View Attachment
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="mt-3">
+            <a asp-action="Inbox" asp-route-employeeId="@Model.ToEmployeeId" class="btn btn-secondary">
+                Back to Inbox
+            </a>
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                View Full Details
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-badge {
+        position: absolute;
+        left: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 40px;
+        color: white;
+    }
+    
+    .timeline-panel {
+        margin-left: 60px;
+        padding: 15px;
+        background: #fff;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .timeline-title {
+        margin-top: 0;
+        margin-bottom: 5px;
+    }
+</style>

@@ -1,0 +1,179 @@
+@model PrisonEmployeeManagement.Models.EmployeeFilterViewModel
+@{
+    ViewData["Title"] = "Prison Employees";
+}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Employees</h5>
+                <h2 class="mb-0">@(ViewBag.Statistics?["Total"] ?? 0)</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Active Employees</h5>
+                <h2 class="mb-0">@(ViewBag.Statistics?["Active"] ?? 0)</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">On Leave</h5>
+                <h2 class="mb-0">@(ViewBag.Statistics?["OnLeave"] ?? 0)</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Departments</h5>
+                <h2 class="mb-0">@(ViewBag.DepartmentsCount ?? 0)</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h2 class="mb-0">Prison Employee Management System</h2>
+    </div>
+    <div class="card-body">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <a asp-controller="Employees" asp-action="Create" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add New Employee
+                </a>
+                <a asp-controller="Employees" asp-action="Export" class="btn btn-info">
+                    <i class="fas fa-download"></i> Export Data
+                </a>
+            </div>
+        </div>
+        
+        <form asp-controller="Employees" asp-action="Index" method="get" class="mb-3">
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" name="searchTerm" class="form-control" 
+                           placeholder="Search by name, ID, email..." 
+                           value="@Model.SearchTerm" />
+                </div>
+                <div class="col-md-3">
+                    <select name="department" class="form-control" asp-items="ViewBag.Departments">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-control" asp-items="ViewBag.Statuses">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr class="table-dark">
+                        <th style="width: 10%">Employee ID</th>
+                        <th style="width: 15%">Full Name</th>
+                        <th style="width: 15%">Position</th>
+                        <th style="width: 15%">Department</th>
+                        <th style="width: 15%">Email</th>
+                        <th style="width: 10%">Phone</th>
+                        <th style="width: 8%">Status</th>
+                        <th style="width: 8%">Hire Date</th>
+                        <th style="width: 4%">Age</th>
+                        <th style="width: 20%">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var employee in Model.Employees)
+                    {
+                        <tr>
+                            <td>@employee.EmployeeNumber</td>
+                            <td>@employee.FullName</td>
+                            <td>@employee.Position</td>
+                            <td>@employee.Department</td>
+                            <td>@employee.Email</td>
+                            <td>@employee.PhoneNumber</td>
+                            <td>
+                                @if (employee.EmploymentStatus == "Active")
+                                {
+                                    <span class="badge bg-success">@employee.EmploymentStatus</span>
+                                }
+                                else if (employee.EmploymentStatus == "On Leave")
+                                {
+                                    <span class="badge bg-warning">@employee.EmploymentStatus</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@employee.EmploymentStatus</span>
+                                }
+                            </td>
+                            <td>@employee.HireDate.ToString("MM/dd/yyyy")</td>
+                            <td>@employee.Age</td>
+                            <td>
+                                @{
+                                    string detailsUrl = Url.Action("Details", "Employees", new { id = employee.Id });
+                                    string editUrl = Url.Action("Edit", "Employees", new { id = employee.Id });
+                                    string deleteUrl = Url.Action("Delete", "Employees", new { id = employee.Id });
+                                }
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="@detailsUrl" class="btn btn-info" title="Details">
+                                        <i class="fas fa-eye"></i> Details
+                                    </a>
+                                    <a href="@editUrl" class="btn btn-warning" title="Edit">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a href="@deleteUrl" class="btn btn-danger" title="Delete">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        @if (!Model.Employees.Any())
+        {
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> No employees found. Click "Add New Employee" to create one.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-dismiss alerts after 3 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 3000);
+    </script>
+}

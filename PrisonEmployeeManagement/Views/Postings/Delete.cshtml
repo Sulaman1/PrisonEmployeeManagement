@@ -1,0 +1,39 @@
+@model PrisonEmployeeManagement.Models.EmployeePosting
+@{
+    ViewData["Title"] = "Delete Posting";
+}
+
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h3>Delete Posting Record</h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <h4>Are you sure you want to delete this posting record?</h4>
+            <p>This action cannot be undone.</p>
+        </div>
+        
+        <dl class="row">
+            <dt class="col-sm-3">Location:</dt>
+            <dd class="col-sm-9">@Model.Location</dd>
+            
+            <dt class="col-sm-3">Department:</dt>
+            <dd class="col-sm-9">@Model.Department</dd>
+            
+            <dt class="col-sm-3">Position:</dt>
+            <dd class="col-sm-9">@Model.Position</dd>
+            
+            <dt class="col-sm-3">Start Date:</dt>
+            <dd class="col-sm-9">@Model.StartDate.ToString("MM/dd/yyyy")</dd>
+            
+            <dt class="col-sm-3">End Date:</dt>
+            <dd class="col-sm-9">@(Model.EndDate?.ToString("MM/dd/yyyy") ?? "Present")</dd>
+        </dl>
+        
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EmployeeId" />
+            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+            <a asp-action="Index" asp-route-employeeId="@Model.EmployeeId" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>

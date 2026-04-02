@@ -1,0 +1,231 @@
+@model PrisonEmployeeManagement.Models.FileWorkflowViewModel
+@{
+    ViewData["Title"] = "Workflow Details";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h3><i class="fas fa-tasks"></i> Workflow Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-@(Model.Priority == "Urgent" ? "danger" : Model.Priority == "High" ? "warning" : "info")">
+                    <strong>Workflow #:</strong> @Model.WorkflowNumber<br />
+                    <strong>File:</strong> @Model.FileNumber - @Model.FileTitle<br />
+                    <strong>Subject:</strong> @Model.Subject
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">From:</dt>
+                            <dd class="col-sm-8">@Model.FromEmployee (@Model.FromDepartment)</dd>
+                            
+                            <dt class="col-sm-4">To:</dt>
+                            <dd class="col-sm-8">@Model.ToEmployee (@Model.ToDepartment)</dd>
+                            
+                            <dt class="col-sm-4">Sent Date:</dt>
+                            <dd class="col-sm-8">@Model.SentDate.ToString("MM/dd/yyyy HH:mm")</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Status:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-@(Model.Status == "Completed" ? "success" : 
+                                                      Model.Status == "Pending" ? "warning" : 
+                                                      Model.Status == "Rejected" ? "danger" : "info")">
+                                    @Model.Status
+                                </span>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Priority:</dt>
+                            <dd class="col-sm-8">@Model.Priority</dd>
+                            
+                            <dt class="col-sm-4">Due Date:</dt>
+                            <dd class="col-sm-8">@(Model.DueDate?.ToString("MM/dd/yyyy") ?? "N/A")</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <h5>Remarks & Timeline</h5>
+                <div class="timeline">
+                    @foreach (var remark in Model.Remarks.OrderBy(r => r.CreatedAt))
+                    {
+                        <div class="timeline-item mb-3">
+                            <div class="card border-left-@(remark.ActionType == "Send" ? "primary" : 
+                                                          remark.ActionType == "Receive" ? "info" :
+                                                          remark.ActionType == "Approve" ? "success" :
+                                                          remark.ActionType == "Reject" ? "danger" : "secondary")">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>@remark.EmployeeName</strong>
+                                        <small class="text-muted">@remark.CreatedAt.ToString("MM/dd/yyyy HH:mm")</small>
+                                    </div>
+                                    <span class="badge bg-@(remark.ActionType == "Send" ? "primary" : 
+                                                          remark.ActionType == "Receive" ? "info" :
+                                                          remark.ActionType == "Approve" ? "success" :
+                                                          remark.ActionType == "Reject" ? "danger" : "secondary") mb-2">
+                                        @remark.ActionType
+                                    </span>
+                                    <p class="mt-2 mb-0">@remark.Remark</p>
+                                    @if (!string.IsNullOrEmpty(remark.AttachmentPath))
+                                    {
+                                        <a href="@remark.AttachmentPath" class="btn btn-sm btn-link" target="_blank">
+                                            <i class="fas fa-paperclip"></i> Attachment
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-comment"></i> Add Remark</h5>
+            </div>
+            <div class="card-body">
+                <form id="remarkForm">
+                    <input type="hidden" id="workflowId" value="@Model.Id" />
+                    
+                    <div class="form-group mb-3">
+                        <label>Action Type</label>
+                        <select id="actionType" class="form-control">
+                            <option value="Remark">Remark</option>
+                            <option value="Receive">Receive</option>
+                            <option value="Approve">Approve</option>
+                            <option value="Reject">Reject</option>
+                            <option value="Complete">Complete</option>
+                            <option value="Return">Return</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label>Remark</label>
+                        <textarea id="remark" class="form-control" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label>Attachment (Optional)</label>
+                        <input type="file" id="attachment" class="form-control" />
+                    </div>
+                    
+                    <button type="button" onclick="addRemark()" class="btn btn-primary w-100">
+                        <i class="fas fa-paper-plane"></i> Submit Remark
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-warning">
+                <h5><i class="fas fa-share"></i> Forward to Another Department</h5>
+            </div>
+            <div class="card-body">
+                <form id="forwardForm">
+                    <div class="form-group mb-3">
+                        <label>To Employee</label>
+                        <select id="toEmployeeId" class="form-control" asp-items="ViewBag.Employees" required>
+                            <option value="">Select Employee</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label>Remark</label>
+                        <textarea id="forwardRemark" class="form-control" rows="2" required></textarea>
+                    </div>
+                    
+                    <button type="button" onclick="forwardFile()" class="btn btn-warning w-100">
+                        <i class="fas fa-share"></i> Forward File
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    function addRemark() {
+        var workflowId = $('#workflowId').val();
+        var actionType = $('#actionType').val();
+        var remark = $('#remark').val();
+        
+        if (!remark) {
+            alert('Please enter a remark');
+            return;
+        }
+        
+        var formData = new FormData();
+        formData.append('workflowId', workflowId);
+        formData.append('actionType', actionType);
+        formData.append('remark', remark);
+        
+        var attachment = $('#attachment')[0].files[0];
+        if (attachment) {
+            formData.append('attachment', attachment);
+        }
+        
+        $.ajax({
+            url: '/Workflow/AddRemark',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error: ' + error);
+            }
+        });
+    }
+    
+    function forwardFile() {
+        var workflowId = $('#workflowId').val();
+        var toEmployeeId = $('#toEmployeeId').val();
+        var remark = $('#forwardRemark').val();
+        
+        if (!toEmployeeId) {
+            alert('Please select an employee');
+            return;
+        }
+        
+        if (!remark) {
+            alert('Please enter a remark');
+            return;
+        }
+        
+        $.ajax({
+            url: '/Workflow/Forward',
+            type: 'POST',
+            data: {
+                workflowId: workflowId,
+                toEmployeeId: toEmployeeId,
+                remark: remark
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error: ' + error);
+            }
+        });
+    }
+</script>
+}

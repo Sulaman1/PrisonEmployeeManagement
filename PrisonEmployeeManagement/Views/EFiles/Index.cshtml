@@ -1,0 +1,123 @@
+@model PrisonEmployeeManagement.Models.EFileSearchViewModel
+@{
+    ViewData["Title"] = "Electronic Filing System";
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3><i class="fas fa-folder-open"></i> Electronic Filing System (EFiling)</h3>
+    </div>
+    <div class="card-body">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="mb-3">
+            <a asp-action="Create" class="btn btn-success">
+                <i class="fas fa-upload"></i> Upload New File
+            </a>
+        </div>
+
+        <!-- Search Form -->
+        <form asp-action="Index" method="get" class="mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" name="searchTerm" class="form-control" 
+                           placeholder="Search by file number, title..." 
+                           value="@Model.SearchTerm" />
+                </div>
+                <div class="col-md-2">
+                    <select name="category" class="form-control" asp-items="ViewBag.Categories">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-control" asp-items="ViewBag.Statuses">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="employeeId" class="form-control" asp-items="ViewBag.Employees">
+                        <option value="">All Employees</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Files Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>File Number</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Related To</th>
+                        <th>Upload Date</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Confidential</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Files)
+                    {
+                        <tr>
+                            <td>@item.FileNumber</td>
+                            <td>@item.FileTitle</td>
+                            <td><span class="badge bg-info">@item.Category</span></td>
+                            <td>@item.EmployeeName</td>
+                            <td>@item.UploadDate.ToString("MM/dd/yyyy")</td>
+                            <td>@(item.FileSize?.ToString("N0") ?? "0") KB</td>
+                            <td>
+                                <span class="badge bg-@(item.Status == "Active" ? "success" : "secondary")">
+                                    @item.Status
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-@(item.ConfidentialLevel == "Top Secret" ? "danger" : 
+                                                      item.ConfidentialLevel == "Secret" ? "warning" : 
+                                                      item.ConfidentialLevel == "Confidential" ? "info" : "secondary")">
+                                    @item.ConfidentialLevel
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Download" asp-route-id="@item.Id" class="btn btn-success" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Files.Any())
+        {
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> No files found. Click "Upload New File" to add one.
+            </div>
+        }
+    </div>
+</div>

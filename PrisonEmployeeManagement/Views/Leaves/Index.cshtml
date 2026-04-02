@@ -1,0 +1,87 @@
+@model IEnumerable<PrisonEmployeeManagement.Models.EmployeeLeave>
+@{
+    ViewData["Title"] = "Leave Records";
+    int employeeId = ViewBag.EmployeeId;
+    string employeeName = ViewBag.EmployeeName;
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3>Leave Records - @employeeName</h3>
+    </div>
+    <div class="card-body">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+        
+        <div class="mb-3">
+            <a asp-action="Create" asp-route-employeeId="@employeeId" class="btn btn-success">
+                Request Leave
+            </a>
+            <a asp-controller="Employees" asp-action="Details" asp-route-id="@employeeId" class="btn btn-secondary">
+                Back to Employee
+            </a>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Leave Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Total Days</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.LeaveType</td>
+                            <td>@item.StartDate.ToString("MM/dd/yyyy")</td>
+                            <td>@item.EndDate.ToString("MM/dd/yyyy")</td>
+                            <td>@item.TotalDays</td>
+                            <td>
+                                @if (item.Status == "Approved")
+                                {
+                                    <span class="badge bg-success">Approved</span>
+                                }
+                                else if (item.Status == "Pending")
+                                {
+                                    <span class="badge bg-warning">Pending</span>
+                                }
+                                else if (item.Status == "Rejected")
+                                {
+                                    <span class="badge bg-danger">Rejected</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@item.Status</span>
+                                }
+                            </td>
+                            <td>@item.Reason</td>
+                            <td>
+                                @if (item.Status == "Pending")
+                                {
+                                    <a asp-action="Approve" asp-route-id="@item.Id" class="btn btn-sm btn-success">Approve</a>
+                                    <a asp-action="Reject" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Reject</a>
+                                }
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">No leave records found.</div>
+        }
+    </div>
+</div>

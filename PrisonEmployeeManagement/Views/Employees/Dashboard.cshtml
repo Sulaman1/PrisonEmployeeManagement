@@ -1,0 +1,121 @@
+@{
+    ViewData["Title"] = "HR Dashboard";
+}
+
+<div class="container-fluid mt-4">
+    <h2>HR Dashboard</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Total Employees</h5>
+                    <h2>@ViewBag.TotalEmployees</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Active Employees</h5>
+                    <h2>@ViewBag.ActiveEmployees</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5>On Leave</h5>
+                    <h2>@ViewBag.OnLeave</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5>Disciplinary Cases</h5>
+                    <h2>@ViewBag.TotalDisciplinary</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Conduct Records</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>Title</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var conduct in ViewBag.RecentConducts)
+                                {
+                                    <tr>
+                                        <td>@conduct.Employee?.FullName</td>
+                                        <td>
+                                            <span class="badge bg-@(conduct.ConductType == "Good" ? "success" : "danger")">
+                                                @conduct.ConductType
+                                            </span>
+                                        </td>
+                                        <td>@conduct.IncidentDate.ToString("MM/dd/yyyy")</td>
+                                        <td>@conduct.Title</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Upcoming Training Expirations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Training</th>
+                                    <th>Expiry Date</th>
+                                    <th>Days Left</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var training in ViewBag.ExpiringTrainings)
+                                {
+                                    <tr>
+                                        <td>@training.Employee?.FullName</td>
+                                        <td>@training.TrainingName</td>
+                                        <td>@training.CertificateExpiry?.ToString("MM/dd/yyyy")</td>
+                                        <td>
+                                            @{
+                                                var daysLeft = (training.CertificateExpiry - DateTime.Today)?.Days;
+                                                <span class="badge bg-@(daysLeft <= 30 ? "danger" : daysLeft <= 90 ? "warning" : "info")">
+                                                    @daysLeft days
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

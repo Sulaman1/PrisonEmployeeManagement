@@ -1,0 +1,138 @@
+@model PrisonEmployeeManagement.Models.EFile
+@{
+    ViewData["Title"] = "File Details";
+    var accessLogs = ViewBag.AccessLogs as List<PrisonEmployeeManagement.Models.FileAccessLog>;
+}
+
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h3><i class="fas fa-file-alt"></i> File Details</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">File Number:</dt>
+                    <dd class="col-sm-8">@Model.FileNumber</dd>
+
+                    <dt class="col-sm-4">Title:</dt>
+                    <dd class="col-sm-8">@Model.FileTitle</dd>
+
+                    <dt class="col-sm-4">Category:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-info">@Model.Category</span>
+                    </dd>
+
+                    <dt class="col-sm-4">Description:</dt>
+                    <dd class="col-sm-8">@Model.Description</dd>
+
+                    <dt class="col-sm-4">Status:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-@(Model.Status == "Active" ? "success" : "secondary")">
+                            @Model.Status
+                        </span>
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Confidential Level:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-@(Model.ConfidentialLevel == "Top Secret" ? "danger" : 
+                                              Model.ConfidentialLevel == "Secret" ? "warning" : 
+                                              Model.ConfidentialLevel == "Confidential" ? "info" : "secondary")">
+                            @Model.ConfidentialLevel
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-4">File Type:</dt>
+                    <dd class="col-sm-8">@Model.FileType</dd>
+
+                    <dt class="col-sm-4">File Size:</dt>
+                    <dd class="col-sm-8">@(Model.FileSize?.ToString("N0") ?? "0") KB</dd>
+
+                    <dt class="col-sm-4">Upload Date:</dt>
+                    <dd class="col-sm-8">@Model.UploadDate.ToString("MM/dd/yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4">Uploaded By:</dt>
+                    <dd class="col-sm-8">@Model.UploadedBy</dd>
+                </dl>
+            </div>
+        </div>
+
+        @if (Model.Employee != null)
+        {
+            <div class="alert alert-info">
+                <strong>Related Employee:</strong> @Model.Employee.FullName (ID: @Model.Employee.EmployeeNumber)
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.Tags))
+        {
+            <div class="mb-3">
+                <strong>Tags:</strong>
+                @foreach (var tag in Model.Tags.Split(','))
+                {
+                    <span class="badge bg-secondary me-1">@tag.Trim()</span>
+                }
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.Notes))
+        {
+            <div class="alert alert-secondary">
+                <strong>Notes:</strong> @Model.Notes
+            </div>
+        }
+
+        <div class="mt-3">
+            <a asp-action="Download" asp-route-id="@Model.Id" class="btn btn-success">
+                <i class="fas fa-download"></i> Download File
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <hr />
+
+        <h5><i class="fas fa-history"></i> Access Log</h5>
+        @if (accessLogs != null && accessLogs.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Access Time</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in accessLogs)
+                        {
+                            <tr>
+                                <td>@log.AccessTime.ToString("MM/dd/yyyy HH:mm:ss")</td>
+                                <td>@log.AccessedBy</td>
+                                <td>
+                                    <span class="badge bg-@(log.Action == "View" ? "info" : log.Action == "Download" ? "success" : "secondary")">
+                                        @log.Action
+                                    </span>
+                                 </td>
+                                <td>@log.IPAddress</td>
+                             </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">No access logs available.</div>
+        }
+    </div>
+</div>

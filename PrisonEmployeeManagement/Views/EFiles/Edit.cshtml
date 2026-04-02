@@ -1,0 +1,109 @@
+@model PrisonEmployeeManagement.Models.EFile
+@{
+    ViewData["Title"] = "Edit File";
+}
+
+<div class="card">
+    <div class="card-header bg-warning text-white">
+        <h3><i class="fas fa-edit"></i> Edit File Record</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="FilePath" />
+            <input type="hidden" asp-for="FileType" />
+            <input type="hidden" asp-for="FileSize" />
+            <input type="hidden" asp-for="UploadDate" />
+            <input type="hidden" asp-for="UploadedBy" />
+            <input type="hidden" asp-for="CreatedAt" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="FileNumber" class="fw-bold"></label>
+                        <input asp-for="FileNumber" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="FileTitle" class="fw-bold"></label>
+                        <input asp-for="FileTitle" class="form-control" required />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Category" class="fw-bold"></label>
+                        <select asp-for="Category" class="form-control" asp-items="ViewBag.Categories" required></select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="EmployeeId" class="fw-bold">Related Employee</label>
+                        <select asp-for="EmployeeId" class="form-control" asp-items="ViewBag.Employees">
+                            <option value="">Select Employee (Optional)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="ConfidentialLevel" class="fw-bold"></label>
+                        <select asp-for="ConfidentialLevel" class="form-control" asp-items="ViewBag.ConfidentialLevels" required></select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Status" class="fw-bold"></label>
+                        <select asp-for="Status" class="form-control" asp-items="ViewBag.Statuses"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="fw-bold"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="ExpiryDate" class="fw-bold"></label>
+                        <input asp-for="ExpiryDate" class="form-control" type="date" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Tags" class="fw-bold"></label>
+                        <input asp-for="Tags" class="form-control" placeholder="Comma-separated tags" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="fw-bold">Replace File (Optional)</label>
+                <input type="file" name="uploadedFile" class="form-control" />
+                <small class="text-muted">Current file: @System.IO.Path.GetFileName(Model.FilePath)</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Notes" class="fw-bold"></label>
+                <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

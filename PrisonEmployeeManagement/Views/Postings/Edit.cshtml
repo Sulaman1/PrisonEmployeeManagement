@@ -1,0 +1,90 @@
+@model PrisonEmployeeManagement.Models.EmployeePosting
+@{
+    ViewData["Title"] = "Edit Posting";
+}
+
+<div class="card">
+    <div class="card-header bg-warning text-white">
+        <h3>Edit Posting Record</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EmployeeId" />
+            <input type="hidden" asp-for="CreatedAt" />
+            
+            <div class="form-group mb-3">
+                <label asp-for="Location" class="fw-bold"></label>
+                <input asp-for="Location" class="form-control" required />
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="FacilityType" class="fw-bold"></label>
+                <select asp-for="FacilityType" class="form-control" asp-items="ViewBag.FacilityTypes"></select>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Department" class="fw-bold"></label>
+                <input asp-for="Department" class="form-control" />
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Position" class="fw-bold"></label>
+                <input asp-for="Position" class="form-control" />
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="RankAtPosting" class="fw-bold"></label>
+                <input asp-for="RankAtPosting" class="form-control" />
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="StartDate" class="fw-bold"></label>
+                        <input asp-for="StartDate" class="form-control" type="date" required />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="EndDate" class="fw-bold"></label>
+                        <input asp-for="EndDate" class="form-control" type="date" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="PostingType" class="fw-bold"></label>
+                        <select asp-for="PostingType" class="form-control" asp-items="ViewBag.PostingTypes"></select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="IsCurrent" class="fw-bold"></label>
+                        <input asp-for="IsCurrent" type="checkbox" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="OrderNumber" class="fw-bold"></label>
+                <input asp-for="OrderNumber" class="form-control" />
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="TransferReason" class="fw-bold"></label>
+                <input asp-for="TransferReason" class="form-control" />
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Notes" class="fw-bold"></label>
+                <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="Index" asp-route-employeeId="@Model.EmployeeId" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

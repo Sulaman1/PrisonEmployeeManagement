@@ -1,0 +1,73 @@
+@model IEnumerable<PrisonEmployeeManagement.Models.FileWorkflow>
+@{
+    ViewData["Title"] = "Sent Items";
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3><i class="fas fa-paper-plane"></i> Sent Items</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Workflow #</th>
+                        <th>File</th>
+                        <th>To</th>
+                        <th>Subject</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Sent Date</th>
+                        <th>Due Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.WorkflowNumber</td
+                            <td>@item.File?.FileNumber</td
+                            <td>@item.ToEmployee?.FullName</td
+                            <td>@item.Subject</td
+                            <td>
+                                @if (item.Priority == "Urgent")
+                                {
+                                    <span class="badge bg-danger">Urgent</span>
+                                }
+                                else if (item.Priority == "High")
+                                {
+                                    <span class="badge bg-warning">High</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info">@item.Priority</span>
+                                }
+                             </td
+                            <td>
+                                <span class="badge bg-@(item.Status == "Completed" ? "success" : 
+                                                      item.Status == "Pending" ? "warning" : 
+                                                      item.Status == "Rejected" ? "danger" : "info")">
+                                    @item.Status
+                                </span>
+                             </td
+                            <td>@item.SentDate.ToString("MM/dd/yyyy")</td
+                            <td>@(item.DueDate?.ToString("MM/dd/yyyy") ?? "N/A")</td
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Track" asp-route-id="@item.Id" class="btn btn-info" title="Track">
+                                        <i class="fas fa-chart-line"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-secondary" title="Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                             </td
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

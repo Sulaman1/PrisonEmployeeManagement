@@ -1,0 +1,100 @@
+@model IEnumerable<PrisonEmployeeManagement.Models.FileWorkflow>
+@{
+    ViewData["Title"] = "Workflow Dashboard";
+    var stats = ViewBag.Statistics;
+}
+
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5>Total</h5>
+                <h2>@stats.TotalWorkflows</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5>Pending</h5>
+                <h2>@stats.Pending</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5>In Progress</h5>
+                <h2>@stats.InProgress</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5>Completed</h5>
+                <h2>@stats.Completed</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <h5>Urgent</h5>
+                <h2>@stats.Urgent</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-dark text-white">
+            <div class="card-body">
+                <h5>Overdue</h5>
+                <h2>@stats.Overdue</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3><i class="fas fa-chart-line"></i> Recent Workflows</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Workflow #</th>
+                        <th>File</th>
+                        <th>From → To</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Sent Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.WorkflowNumber</td
+                            <td>@item.File?.FileNumber</td
+                            <td>@item.FromEmployee?.FullName → @item.ToEmployee?.FullName</td
+                            <td>@item.Subject</td
+                            <td>
+                                <span class="badge bg-@(item.Status == "Completed" ? "success" : 
+                                                      item.Status == "Pending" ? "warning" : "info")">
+                                    @item.Status
+                                </span>
+                             </td
+                            <td>@item.SentDate.ToString("MM/dd/yyyy")</td
+                            <td>
+                                <a asp-action="Track" asp-route-id="@item.Id" class="btn btn-sm btn-info">Track</a>
+                             </td
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
