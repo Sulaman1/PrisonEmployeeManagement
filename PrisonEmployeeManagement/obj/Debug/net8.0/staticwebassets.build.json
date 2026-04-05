@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "+TTAkR7l40Xrsg3RhvEhtL9gXPhXN+47jQRvGclWvN4=",
+  "Hash": "EzQv9we2DXiBonKfmVOdaPGjKVY/uP2GvNxMDpu3wSw=",
   "Source": "PrisonEmployeeManagement",
   "BasePath": "_content/PrisonEmployeeManagement",
   "Mode": "Default",
@@ -2392,6 +2392,44 @@
       "OriginalItemSpec": "wwwroot/uploads/efiles/FILE-20260404-3805_20260404024531_NetworkHack.txt"
     },
     {
+      "Identity": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/uploads/efiles/FILE-20260405-1175_20260405180123_NetworkHack.txt",
+      "SourceId": "PrisonEmployeeManagement",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/",
+      "BasePath": "_content/PrisonEmployeeManagement",
+      "RelativePath": "uploads/efiles/FILE-20260405-1175_20260405180123_NetworkHack.txt",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/efiles/FILE-20260405-1175_20260405180123_NetworkHack.txt"
+    },
+    {
+      "Identity": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/uploads/efiles/FILE-20260405-3370_20260405185038_NetworkHack.txt",
+      "SourceId": "PrisonEmployeeManagement",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/",
+      "BasePath": "_content/PrisonEmployeeManagement",
+      "RelativePath": "uploads/efiles/FILE-20260405-3370_20260405185038_NetworkHack.txt",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/efiles/FILE-20260405-3370_20260405185038_NetworkHack.txt"
+    },
+    {
       "Identity": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/uploads/efiles/FILE-20260405-7795_20260405160554_NetworkHack.txt",
       "SourceId": "PrisonEmployeeManagement",
       "SourceType": "Discovered",
@@ -2428,6 +2466,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/efiles/FILE-20260405-8317_20260405172100_NetworkHack.txt"
+    },
+    {
+      "Identity": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/uploads/efiles/FILE-20260406-1961_20260406004037_NetworkHack.txt",
+      "SourceId": "PrisonEmployeeManagement",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/",
+      "BasePath": "_content/PrisonEmployeeManagement",
+      "RelativePath": "uploads/efiles/FILE-20260406-1961_20260406004037_NetworkHack.txt",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/efiles/FILE-20260406-1961_20260406004037_NetworkHack.txt"
     }
   ]
 }

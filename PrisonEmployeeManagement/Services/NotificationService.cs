@@ -189,24 +189,6 @@ namespace PrisonEmployeeManagement.Services
                 _logger.LogError(ex, "Error sending email to {ToEmail}", toEmail);
             }
         }
-
-        public async Task NotifyFileReceived(int toEmployeeId, int fromEmployeeId, int workflowId, string fileName)
-        {
-            try
-            {
-                var fromEmployee = await _context.Employees.FindAsync(fromEmployeeId);
-                var title = "New File Received";
-                var message = $"You have received a new file '{fileName}' from {fromEmployee?.FullName ?? "Unknown"}. Please review and take action.";
-                
-                await CreateNotification(toEmployeeId, title, message, "FileReceived", workflowId);
-                _logger.LogInformation($"File received notification sent to employee {toEmployeeId}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error sending file received notification");
-            }
-        }
-
         public async Task NotifyFileForwarded(int toEmployeeId, int fromEmployeeId, int workflowId, string fileName)
         {
             try
@@ -215,6 +197,7 @@ namespace PrisonEmployeeManagement.Services
                 var title = "File Forwarded to You";
                 var message = $"{fromEmployee?.FullName ?? "Unknown"} has forwarded the file '{fileName}' to you for further action.";
                 
+                // Create notification ONLY for the target employee
                 await CreateNotification(toEmployeeId, title, message, "FileForwarded", workflowId);
                 _logger.LogInformation($"File forwarded notification sent to employee {toEmployeeId}");
             }
@@ -224,6 +207,24 @@ namespace PrisonEmployeeManagement.Services
             }
         }
 
+        public async Task NotifyFileReceived(int toEmployeeId, int fromEmployeeId, int workflowId, string fileName)
+        {
+            try
+            {
+                var fromEmployee = await _context.Employees.FindAsync(fromEmployeeId);
+                var title = "New File Received";
+                var message = $"You have received a new file '{fileName}' from {fromEmployee?.FullName ?? "Unknown"}. Please review and take action.";
+                
+                // Create notification ONLY for the target employee
+                await CreateNotification(toEmployeeId, title, message, "FileReceived", workflowId);
+                _logger.LogInformation($"File received notification sent to employee {toEmployeeId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending file received notification");
+            }
+        }
+                
         public async Task NotifyRemarkAdded(int toEmployeeId, int fromEmployeeId, int workflowId, string remark)
         {
             try

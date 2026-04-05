@@ -31,6 +31,36 @@ namespace PrisonEmployeeManagement.Controllers
             _userManager = userManager; 
             _notificationService = notificationService;
         }
+
+        // Helper method to get current user
+        private async Task<ApplicationUser?> GetCurrentUser()
+        {
+            try
+            {
+                var userEmail = User.Identity?.Name;
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    _logger.LogWarning("User email is null or empty");
+                    return null;
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User not found for email: {userEmail}");
+                    return null;
+                }
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current user");
+                return null;
+            }
+        }
+
+
         // Helper method to get current employee ID
         private async Task<int?> GetCurrentEmployeeId()
         {
@@ -41,6 +71,7 @@ namespace PrisonEmployeeManagement.Controllers
             }
             return null;
         }
+      
         // Helper method to get current user name
         private async Task<string> GetCurrentUserName()
         {
@@ -52,71 +83,220 @@ namespace PrisonEmployeeManagement.Controllers
             return "System";
         }
 
+
         // GET: EFiles
         public async Task<IActionResult> Index(string searchTerm, string category, string status, int? employeeId)
         {
-            var query = _context.EFiles
-                .Include(e => e.Employee)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
+            try
             {
-                query = query.Where(e => e.FileNumber.Contains(searchTerm) ||
-                                        e.FileTitle.Contains(searchTerm) ||
-                                        e.Description.Contains(searchTerm));
-            }
-
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                query = query.Where(e => e.Category == category);
-            }
-
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                query = query.Where(e => e.Status == status);
-            }
-
-            if (employeeId.HasValue)
-            {
-                query = query.Where(e => e.EmployeeId == employeeId);
-            }
-
-            var files = await query
-                .OrderByDescending(e => e.UploadDate)
-                .Select(e => new EFileViewModel
+                // Get current logged-in user and employee
+                var currentUser = await GetCurrentUser();
+                var currentEmployee = await GetCurrentEmployee();
+                
+                if (currentEmployee == null)
                 {
-                    Id = e.Id,
-                    FileNumber = e.FileNumber,
-                    FileTitle = e.FileTitle,
-                    Category = e.Category,
-                    FileType = e.FileType,
-                    EmployeeName = e.Employee != null ? e.Employee.FullName : "N/A",
-                    UploadDate = e.UploadDate,
-                    Status = e.Status,
-                    ConfidentialLevel = e.ConfidentialLevel,
-                    FileSize = e.FileSize
-                })
-                .ToListAsync();
+                    TempData["ErrorMessage"] = "Unable to identify current user. Please login again.";
+                    return RedirectToAction("Login", "Account");
+                }
 
-            var searchModel = new EFileSearchViewModel
+                // Build query for files where current employee is involved
+                var query = _context.EFiles
+                    .Include(e => e.Employee)
+                    .AsQueryable();
+
+                // Get all workflow IDs where current employee is involved (as sender or receiver)
+                var involvedWorkflowIds = await _context.FileWorkflows
+                    .Where(w => w.FromEmployeeId == currentEmployee.Id || w.ToEmployeeId == currentEmployee.Id)
+                    .Select(w => w.FileId)
+                    .Distinct()
+                    .ToListAsync();
+
+                // Filter files based on user involvement
+                // User can see files if:
+                // 1. File is directly assigned to them (EmployeeId matches)
+                // 2. File is part of a workflow they are involved in
+                // 3. File was uploaded by them (check by email or name)
+                
+                var userEmail = currentUser?.Email ?? "";
+                var userFullName = currentEmployee.FullName;
+                
+                query = query.Where(e => 
+                    e.EmployeeId == currentEmployee.Id ||  // File directly assigned to employee
+                    involvedWorkflowIds.Contains(e.Id) ||  // File involved in workflow with employee
+                    (e.UploadedBy != null && (e.UploadedBy == userEmail || e.UploadedBy == userFullName)) // File uploaded by current user
+                );
+
+                // Apply search filters
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    query = query.Where(e => (e.FileNumber != null && e.FileNumber.Contains(searchTerm)) ||
+                                            (e.FileTitle != null && e.FileTitle.Contains(searchTerm)) ||
+                                            (e.Description != null && e.Description.Contains(searchTerm)));
+                }
+
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    query = query.Where(e => e.Category == category);
+                }
+
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    query = query.Where(e => e.Status == status);
+                }
+
+                if (employeeId.HasValue)
+                {
+                    query = query.Where(e => e.EmployeeId == employeeId);
+                }
+
+                var files = await query
+                    .OrderByDescending(e => e.UploadDate)
+                    .Select(e => new EFileViewModel
+                    {
+                        Id = e.Id,
+                        FileNumber = e.FileNumber ?? "N/A",
+                        FileTitle = e.FileTitle ?? "N/A",
+                        Category = e.Category ?? "Uncategorized",
+                        FileType = e.FileType ?? "Unknown",
+                        EmployeeName = e.Employee != null ? (e.Employee.FullName ?? "N/A") : "N/A",
+                        UploadDate = e.UploadDate,
+                        Status = e.Status ?? "Active",
+                        ConfidentialLevel = e.ConfidentialLevel ?? "Public",
+                        FileSize = e.FileSize
+                    })
+                    .ToListAsync();
+
+                var searchModel = new EFileSearchViewModel
+                {
+                    SearchTerm = searchTerm,
+                    Category = category,
+                    Status = status,
+                    EmployeeId = employeeId,
+                    Files = files
+                };
+
+                // Populate filters (only with categories that exist in user's files)
+                var userCategories = await query.Select(e => e.Category).Where(c => c != null).Distinct().ToListAsync();
+                ViewBag.Categories = new SelectList(userCategories);
+                ViewBag.Statuses = new SelectList(new[] { "Active", "Archived" });
+                ViewBag.ConfidentialLevels = new SelectList(new[] { "Public", "Internal", "Confidential", "Secret", "Top Secret" });
+                
+                // Add user info to view
+                ViewBag.CurrentEmployeeName = currentEmployee.FullName ?? "Unknown";
+                ViewBag.CurrentEmployeeId = currentEmployee.Id;
+                ViewBag.FileCount = files.Count;
+
+                return View(searchModel);
+            }
+            catch (Exception ex)
             {
-                SearchTerm = searchTerm,
-                Category = category,
-                Status = status,
-                EmployeeId = employeeId,
-                Files = files
-            };
-
-            // Populate filters
-            ViewBag.Categories = new SelectList(await _context.EFiles.Select(e => e.Category).Distinct().ToListAsync());
-            ViewBag.Statuses = new SelectList(new[] { "Active", "Archived", "Deleted" });
-            ViewBag.ConfidentialLevels = new SelectList(new[] { "Public", "Internal", "Confidential", "Secret", "Top Secret" });
-            ViewBag.Employees = new SelectList(await _context.Employees.Select(e => new { e.Id, e.FullName }).ToListAsync(), "Id", "FullName");
-
-            return View(searchModel);
+                _logger.LogError(ex, "Error loading files index");
+                TempData["ErrorMessage"] = $"An error occurred while loading files: {ex.Message}";
+                return View(new EFileSearchViewModel());
+            }
         }
 
-        // GET: EFiles/Details/5
+// GET: EFiles/GetFileDetails/5
+[HttpGet]
+public async Task<IActionResult> GetFileDetails(int id)
+{
+    try
+    {
+        var file = await _context.EFiles
+            .Include(e => e.Employee)
+            .FirstOrDefaultAsync(e => e.Id == id);
+            
+        if (file == null)
+        {
+            return Json(new { success = false, message = "File not found" });
+        }
+        
+        return Json(new
+        {
+            success = true,
+            data = new
+            {
+                id = file.Id,
+                fileNumber = file.FileNumber,
+                fileTitle = file.FileTitle,
+                description = file.Description,
+                category = file.Category,
+                fileType = file.FileType,
+                fileSize = file.FileSize,
+                uploadDate = file.UploadDate,
+                uploadedBy = file.UploadedBy,
+                status = file.Status,
+                confidentialLevel = file.ConfidentialLevel,
+                employeeName = file.Employee?.FullName,
+                filePath = file.FilePath
+            }
+        });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error getting file details");
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+
+        // GET: EFiles/GetFileContent/5
+        [HttpGet]
+        public async Task<IActionResult> GetFileContent(int id)
+        {
+            try
+            {
+                var file = await _context.EFiles.FindAsync(id);
+                if (file == null || string.IsNullOrEmpty(file.FilePath))
+                {
+                    return NotFound("File not found");
+                }
+                
+                var filePath = Path.Combine(_webHostEnvironment.WebRootPath, file.FilePath.TrimStart('/'));
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return NotFound("File not found on server");
+                }
+                
+                var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+                var contentType = GetContentType(file.FileType);
+                
+                // Log access
+                file.LastAccessed = DateTime.Now;
+                file.AccessCount++;
+                await _context.SaveChangesAsync();
+                
+                return File(fileBytes, contentType);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting file content");
+                return StatusCode(500, "Error reading file");
+            }
+        }
+
+        private string GetContentType(string fileType)
+        {
+            if (string.IsNullOrEmpty(fileType)) return "application/octet-stream";
+            
+            return fileType.ToLower() switch
+            {
+                ".pdf" => "application/pdf",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".txt" => "text/plain",
+                ".html" or ".htm" => "text/html",
+                ".doc" => "application/msword",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".xls" => "application/vnd.ms-excel",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                _ => "application/octet-stream"
+            };
+        }
+
+
+
+        // GET: EFiles/Details/
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -301,7 +481,7 @@ namespace PrisonEmployeeManagement.Controllers
 
             return View(eFile);
         }
-
+    
         // Helper method to get current employee
         private async Task<Employee?> GetCurrentEmployee()
         {
@@ -310,16 +490,31 @@ namespace PrisonEmployeeManagement.Controllers
                 var userEmail = User.Identity?.Name;
                 if (string.IsNullOrEmpty(userEmail))
                 {
+                    _logger.LogWarning("User email is null or empty");
                     return null;
                 }
 
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
-                if (user == null || !user.EmployeeId.HasValue)
+                if (user == null)
                 {
+                    _logger.LogWarning($"User not found for email: {userEmail}");
                     return null;
                 }
 
-                return await _context.Employees.FindAsync(user.EmployeeId.Value);
+                if (!user.EmployeeId.HasValue)
+                {
+                    _logger.LogWarning($"User {userEmail} has no EmployeeId");
+                    return null;
+                }
+
+                var employee = await _context.Employees.FindAsync(user.EmployeeId.Value);
+                if (employee == null)
+                {
+                    _logger.LogWarning($"Employee not found for ID: {user.EmployeeId}");
+                    return null;
+                }
+
+                return employee;
             }
             catch (Exception ex)
             {
@@ -327,7 +522,7 @@ namespace PrisonEmployeeManagement.Controllers
                 return null;
             }
         }
-            
+
         // GET: EFiles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {

@@ -1,0 +1,296 @@
+@model PrisonEmployeeManagement.Models.EFile
+
+<!-- Modal -->
+<div class="modal fade" id="fileViewModal" tabindex="-1" aria-labelledby="fileViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="fileViewModalLabel">
+                    <i class="fas fa-file-alt"></i> File Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="fileModalBody">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading file details...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <a href="#" id="downloadFileBtn" class="btn btn-success" target="_blank">
+                    <i class="fas fa-download"></i> Download
+                </a>
+                <a href="#" id="viewFileBtn" class="btn btn-info" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> Open in New Tab
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Content Preview Modal for Text/PDF -->
+<div class="modal fade" id="fileContentModal" tabindex="-1" aria-labelledby="fileContentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="fileContentModalLabel">
+                    <i class="fas fa-file"></i> File Preview
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="fileContentBody" style="max-height: 70vh;">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading file preview...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <a href="#" id="downloadContentBtn" class="btn btn-success">
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewFileDetails(fileId) {
+        // Show loading
+        $('#fileModalBody').html(`
+            <div class="text-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading file details...</p>
+            </div>
+        `);
+        
+        // Fetch file details
+        $.ajax({
+            url: '/EFiles/GetFileDetails/' + fileId,
+            type: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    displayFileDetails(response.data);
+                } else {
+                    $('#fileModalBody').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> ${response.message}
+                        </div>
+                    `);
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#fileModalBody').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Error loading file details: ${error}
+                    </div>
+                `);
+            }
+        });
+        
+        // Show modal
+        $('#fileViewModal').modal('show');
+    }
+    
+    function displayFileDetails(file) {
+        var fileType = file.fileType ? file.fileType.toLowerCase() : '';
+        var isPreviewable = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'txt', 'html', 'htm'].includes(fileType);
+        
+        var html = `
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">File Number:</dt>
+                        <dd class="col-sm-8"><strong>${file.fileNumber}</strong></dd>
+                        
+                        <dt class="col-sm-4">File Name:</dt>
+                        <dd class="col-sm-8">${escapeHtml(file.fileTitle)}</dd>
+                        
+                        <dt class="col-sm-4">Category:</dt>
+                        <dd class="col-sm-8"><span class="badge bg-info">${file.category || 'N/A'}</span></dd>
+                        
+                        <dt class="col-sm-4">File Type:</dt>
+                        <dd class="col-sm-8">${file.fileType || 'N/A'}</dd>
+                        
+                        <dt class="col-sm-4">File Size:</dt>
+                        <dd class="col-sm-8">${formatFileSize(file.fileSize)}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Upload Date:</dt>
+                        <dd class="col-sm-8">${formatDate(file.uploadDate)}</dd>
+                        
+                        <dt class="col-sm-4">Uploaded By:</dt>
+                        <dd class="col-sm-8">${escapeHtml(file.uploadedBy || 'System')}</dd>
+                        
+                        <dt class="col-sm-4">Status:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-${file.status === 'Active' ? 'success' : 'secondary'}">${file.status}</span>
+                        </dd>
+                        
+                        <dt class="col-sm-4">Confidential:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-${getConfidentialClass(file.confidentialLevel)}">${file.confidentialLevel || 'Public'}</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        `;
+        
+        if (file.description) {
+            html += `
+                <div class="alert alert-secondary mt-2">
+                    <strong>Description:</strong><br />
+                    ${escapeHtml(file.description)}
+                </div>
+            `;
+        }
+        
+        if (file.employeeName) {
+            html += `
+                <div class="alert alert-info mt-2">
+                    <strong>Related Employee:</strong> ${escapeHtml(file.employeeName)}
+                </div>
+            `;
+        }
+        
+        // Add preview section if file is previewable
+        if (isPreviewable && file.filePath) {
+            html += `
+                <hr />
+                <h6><i class="fas fa-eye"></i> Preview</h6>
+                <div class="text-center mt-2">
+                    <button onclick="previewFile(${file.id}, '${file.fileType}')" class="btn btn-primary">
+                        <i class="fas fa-eye"></i> Click to Preview File
+                    </button>
+                </div>
+            `;
+        }
+        
+        $('#fileModalBody').html(html);
+        
+        // Set download and view links
+        $('#downloadFileBtn').attr('href', '/EFiles/Download/' + file.id);
+        $('#viewFileBtn').attr('href', '/EFiles/Download/' + file.id);
+    }
+    
+    function previewFile(fileId, fileType) {
+        $('#fileContentModal').modal('show');
+        $('#fileContentBody').html(`
+            <div class="text-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading file preview...</p>
+            </div>
+        `);
+        
+        var url = '/EFiles/GetFileContent/' + fileId;
+        
+        if (fileType && (fileType.toLowerCase() === 'pdf')) {
+            // For PDF, embed directly
+            $('#fileContentBody').html(`
+                <iframe src="${url}" style="width: 100%; height: 70vh; border: none;"></iframe>
+            `);
+        } else if (fileType && (fileType.toLowerCase() === 'jpg' || fileType.toLowerCase() === 'jpeg' || 
+                                 fileType.toLowerCase() === 'png' || fileType.toLowerCase() === 'gif')) {
+            // For images
+            $('#fileContentBody').html(`
+                <div class="text-center">
+                    <img src="${url}" style="max-width: 100%; max-height: 70vh;" alt="File Preview" />
+                </div>
+            `);
+        } else if (fileType && (fileType.toLowerCase() === 'txt' || fileType.toLowerCase() === 'html' || 
+                                 fileType.toLowerCase() === 'htm')) {
+            // For text/HTML files
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(content) {
+                    if (fileType.toLowerCase() === 'html' || fileType.toLowerCase() === 'htm') {
+                        $('#fileContentBody').html(`
+                            <iframe srcdoc="${escapeHtml(content)}" style="width: 100%; height: 70vh; border: none;"></iframe>
+                        `);
+                    } else {
+                        $('#fileContentBody').html(`
+                            <pre style="white-space: pre-wrap; word-wrap: break-word; max-height: 70vh; overflow: auto;">${escapeHtml(content)}</pre>
+                        `);
+                    }
+                },
+                error: function() {
+                    $('#fileContentBody').html(`
+                        <div class="alert alert-danger">Unable to preview file content.</div>
+                    `);
+                }
+            });
+        } else {
+            $('#fileContentBody').html(`
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Preview not available for this file type. Please download to view.
+                </div>
+            `);
+        }
+        
+        $('#downloadContentBtn').attr('href', '/EFiles/Download/' + fileId);
+    }
+    
+    function formatFileSize(bytes) {
+        if (!bytes) return '0 KB';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+    
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        var date = new Date(dateString);
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+    
+    function getConfidentialClass(level) {
+        switch(level) {
+            case 'Top Secret': return 'danger';
+            case 'Secret': return 'warning';
+            case 'Confidential': return 'info';
+            default: return 'secondary';
+        }
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+
+<style>
+    .modal-lg {
+        max-width: 800px;
+    }
+    .modal-xl {
+        max-width: 1140px;
+    }
+    .modal-dialog-scrollable .modal-body {
+        overflow-y: auto;
+    }
+    iframe {
+        width: 100%;
+        height: 100%;
+        min-height: 500px;
+    }
+</style>
+
+

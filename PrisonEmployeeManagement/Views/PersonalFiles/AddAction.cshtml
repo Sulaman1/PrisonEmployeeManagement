@@ -1,0 +1,80 @@
+@model PrisonEmployeeManagement.Models.PersonalFileAction
+@{
+    ViewData["Title"] = "Add Action";
+    var fileId = ViewBag.PersonalFileId ?? Model?.PersonalFileId;
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3><i class="fas fa-plus-circle"></i> Add Action for: @ViewBag.FileName</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="AddAction" method="post">
+            @Html.AntiForgeryToken()
+            
+            <!-- ONLY ONE hidden field for PersonalFileId -->
+            <input type="hidden" name="PersonalFileId" value="@fileId" />
+            
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label class="fw-bold">Action Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActionDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label class="fw-bold">Action By</label>
+                        <input type="text" name="ActionBy" class="form-control" value="@User.Identity?.Name" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="fw-bold">Action Taken <span class="text-danger">*</span></label>
+                <textarea name="ActionTaken" class="form-control" rows="4" required placeholder="Describe the action taken..."></textarea>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="fw-bold">Remarks</label>
+                <textarea name="Remarks" class="form-control" rows="2" placeholder="Any additional remarks..."></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label class="fw-bold">Next Action Date</label>
+                        <input type="date" name="NextActionDate" class="form-control" />
+                        <small class="text-muted">If applicable, set the date for next action</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label class="fw-bold">Update File Status</label>
+                        <select name="StatusAfterAction" class="form-control" asp-items="ViewBag.Statuses">
+                            <option value="">-- No change --</option>
+                        </select>
+                        <small class="text-muted">Optionally update the main file status</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Add Action
+                </button>
+                <a asp-action="Details" asp-route-id="@fileId" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+

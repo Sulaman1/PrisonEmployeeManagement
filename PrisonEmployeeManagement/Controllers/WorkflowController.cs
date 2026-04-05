@@ -226,6 +226,7 @@ namespace PrisonEmployeeManagement.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
+                // Only show workflows where current employee is the receiver
                 var query = _context.FileWorkflows
                     .Include(w => w.File)
                     .Include(w => w.FromEmployee)
@@ -241,7 +242,7 @@ namespace PrisonEmployeeManagement.Controllers
                 {
                     query = query.Where(w => w.WorkflowNumber.Contains(searchTerm) ||
                                             (w.Subject != null && w.Subject.Contains(searchTerm)) ||
-                                            (w.File != null && w.File.FileTitle != null && w.File.FileTitle.Contains(searchTerm)));
+                                            (w.FromEmployee != null && w.FromEmployee.FullName.Contains(searchTerm)));
                 }
 
                 var workflows = await query
@@ -278,6 +279,7 @@ namespace PrisonEmployeeManagement.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
+                // Only show workflows where current employee is the sender
                 var query = _context.FileWorkflows
                     .Include(w => w.File)
                     .Include(w => w.FromEmployee)
@@ -288,7 +290,7 @@ namespace PrisonEmployeeManagement.Controllers
                 {
                     query = query.Where(w => w.WorkflowNumber.Contains(searchTerm) ||
                                             (w.Subject != null && w.Subject.Contains(searchTerm)) ||
-                                            (w.ToEmployee != null && w.ToEmployee.FullName != null && w.ToEmployee.FullName.Contains(searchTerm)));
+                                            (w.ToEmployee != null && w.ToEmployee.FullName.Contains(searchTerm)));
                 }
 
                 var workflows = await query
@@ -393,158 +395,135 @@ namespace PrisonEmployeeManagement.Controllers
             }
         }
 
-        // POST: Workflow/AddRemark
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddRemark(int workflowId, string remark, string actionType, IFormFile? attachment)
+// POST: UserDashboard/AddRemark
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> AddRemark(int workflowId, int userId, string actionType, string remark, IFormFile? attachment)
+{
+    try
+    {
+        if (string.IsNullOrEmpty(remark))
         {
-            try
-            {
-                var workflow = await _context.FileWorkflows
-                    .Include(w => w.FromEmployee)
-                    .Include(w => w.ToEmployee)
-                    .FirstOrDefaultAsync(w => w.Id == workflowId);
-                    
-                if (workflow == null)
-                {
-                    return Json(new { success = false, message = "Workflow not found" });
-                }
-
-                var currentEmployee = await GetCurrentEmployee();
-                if (currentEmployee == null)
-                {
-                    return Json(new { success = false, message = "Unable to identify current user" });
-                }
-
-                string? attachmentPath = null;
-                if (attachment != null && attachment.Length > 0)
-                {
-                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "workflow");
-                    if (!Directory.Exists(uploadsFolder))
-                    {
-                        Directory.CreateDirectory(uploadsFolder);
-                    }
-
-                    var uniqueFileName = $"{workflow.WorkflowNumber}_{DateTime.Now:yyyyMMddHHmmss}_{attachment.FileName}";
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await attachment.CopyToAsync(fileStream);
-                    }
-                    
-                    attachmentPath = $"/uploads/workflow/{uniqueFileName}";
-                }
-
-                var workflowRemark = new FileWorkflowRemark
-                {
-                    WorkflowId = workflowId,
-                    EmployeeId = currentEmployee.Id,
-                    Remark = remark,
-                    ActionType = actionType,
-                    AttachmentPath = attachmentPath,
-                    CreatedAt = DateTime.Now
-                };
-
-                _context.FileWorkflowRemarks.Add(workflowRemark);
-                
-                // Update workflow status based on action
-                switch (actionType)
-                {
-                    case "Receive":
-                        workflow.Status = "In Progress";
-                        workflow.ReceivedDate = DateTime.Now;
-                        await _notificationService.NotifyFileAction(
-                            workflow.FromEmployeeId,
-                            currentEmployee.Id,
-                            workflowId,
-                            "Received",
-                            workflow.Subject ?? "File"
-                        );
-                        break;
-                    case "Approve":
-                        workflow.Status = "Approved";
-                        workflow.CompletedDate = DateTime.Now;
-                        await _notificationService.NotifyFileAction(
-                            workflow.FromEmployeeId,
-                            currentEmployee.Id,
-                            workflowId,
-                            "Approved",
-                            workflow.Subject ?? "File"
-                        );
-                        break;
-                    case "Reject":
-                        workflow.Status = "Rejected";
-                        workflow.CompletedDate = DateTime.Now;
-                        await _notificationService.NotifyFileAction(
-                            workflow.FromEmployeeId,
-                            currentEmployee.Id,
-                            workflowId,
-                            "Rejected",
-                            workflow.Subject ?? "File"
-                        );
-                        break;
-                    case "Complete":
-                        workflow.Status = "Completed";
-                        workflow.CompletedDate = DateTime.Now;
-                        await _notificationService.NotifyFileAction(
-                            workflow.FromEmployeeId,
-                            currentEmployee.Id,
-                            workflowId,
-                            "Completed",
-                            workflow.Subject ?? "File"
-                        );
-                        break;
-                    case "Close":
-                        workflow.Status = "Closed";
-                        workflow.CompletedDate = DateTime.Now;
-                        await _notificationService.NotifyFileAction(
-                            workflow.FromEmployeeId,
-                            currentEmployee.Id,
-                            workflowId,
-                            "Closed",
-                            workflow.Subject ?? "File"
-                        );
-                        if (workflow.ToEmployeeId.HasValue && workflow.ToEmployeeId != workflow.FromEmployeeId)
-                        {
-                            await _notificationService.NotifyFileAction(
-                                workflow.ToEmployeeId.Value,
-                                currentEmployee.Id,
-                                workflowId,
-                                "Closed",
-                                workflow.Subject ?? "File"
-                            );
-                        }
-                        break;
-                    default:
-                        // For regular remarks, notify the other party
-                        if (actionType == "Remark")
-                        {
-                            int notifyToId = workflow.ToEmployeeId ?? workflow.FromEmployeeId;
-                            if (notifyToId != currentEmployee.Id)
-                            {
-                                await _notificationService.NotifyRemarkAdded(
-                                    notifyToId,
-                                    currentEmployee.Id,
-                                    workflowId,
-                                    remark
-                                );
-                            }
-                        }
-                        break;
-                }
-
-                workflow.UpdatedAt = DateTime.Now;
-                await _context.SaveChangesAsync();
-
-                return Json(new { success = true, message = "Remark added successfully" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding remark");
-                return Json(new { success = false, message = ex.Message });
-            }
+            return Json(new { success = false, message = "Remark cannot be empty" });
         }
+
+        if (string.IsNullOrEmpty(actionType))
+        {
+            return Json(new { success = false, message = "Action type is required" });
+        }
+
+        var workflow = await _context.FileWorkflows
+            .Include(w => w.FromEmployee)
+            .Include(w => w.ToEmployee)
+            .FirstOrDefaultAsync(w => w.Id == workflowId);
+            
+        if (workflow == null)
+        {
+            return Json(new { success = false, message = "Workflow not found" });
+        }
+
+        string? attachmentPath = null;
+        if (attachment != null && attachment.Length > 0)
+        {
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "workflow");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = $"{workflow.WorkflowNumber}_{DateTime.Now:yyyyMMddHHmmss}_{attachment.FileName}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await attachment.CopyToAsync(fileStream);
+            }
+            
+            attachmentPath = $"/uploads/workflow/{uniqueFileName}";
+        }
+
+        var workflowRemark = new FileWorkflowRemark
+        {
+            WorkflowId = workflowId,
+            EmployeeId = userId,
+            Remark = remark,
+            ActionType = actionType,
+            AttachmentPath = attachmentPath,
+            CreatedAt = DateTime.Now
+        };
+
+        _context.FileWorkflowRemarks.Add(workflowRemark);
+        
+        // Update workflow status based on action
+        switch (actionType)
+        {
+            case "Receive":
+                workflow.Status = "In Progress";
+                workflow.ReceivedDate = DateTime.Now;
+                break;
+            case "Approve":
+                workflow.Status = "Approved";
+                workflow.CompletedDate = DateTime.Now;
+                break;
+            case "Reject":
+                workflow.Status = "Rejected";
+                workflow.CompletedDate = DateTime.Now;
+                break;
+            case "Complete":
+                workflow.Status = "Completed";
+                workflow.CompletedDate = DateTime.Now;
+                break;
+        }
+
+        workflow.UpdatedAt = DateTime.Now;
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true, message = "Remark added successfully" });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error adding remark");
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+
+// GET: UserDashboard/CloseWorkflow/5
+public async Task<IActionResult> CloseWorkflow(int id)
+{
+    try
+    {
+        var workflow = await _context.FileWorkflows.FindAsync(id);
+        if (workflow == null)
+        {
+            TempData["ErrorMessage"] = "Workflow not found";
+            return RedirectToAction(nameof(Index));
+        }
+
+        workflow.Status = "Closed";
+        workflow.CompletedDate = DateTime.Now;
+        workflow.UpdatedAt = DateTime.Now;
+
+        var remark = new FileWorkflowRemark
+        {
+            WorkflowId = id,
+            EmployeeId = workflow.ToEmployeeId ?? workflow.FromEmployeeId,
+            Remark = "File closed by user",
+            ActionType = "Close",
+            CreatedAt = DateTime.Now
+        };
+        _context.FileWorkflowRemarks.Add(remark);
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Workflow closed successfully";
+        return RedirectToAction(nameof(Index));
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error closing workflow");
+        TempData["ErrorMessage"] = "Error closing workflow";
+        return RedirectToAction(nameof(Index));
+    }
+}
 
         // POST: Workflow/Forward
         [HttpPost]
@@ -553,65 +532,92 @@ namespace PrisonEmployeeManagement.Controllers
         {
             try
             {
-                var workflow = await _context.FileWorkflows
+                if (toEmployeeId == 0)
+                {
+                    return Json(new { success = false, message = "Please select an employee to forward to" });
+                }
+
+                if (string.IsNullOrEmpty(remark))
+                {
+                    return Json(new { success = false, message = "Please enter a remark" });
+                }
+
+                // Get original workflow
+                var originalWorkflow = await _context.FileWorkflows
                     .Include(w => w.File)
                     .Include(w => w.FromEmployee)
                     .Include(w => w.ToEmployee)
                     .FirstOrDefaultAsync(w => w.Id == workflowId);
                     
-                if (workflow == null)
+                if (originalWorkflow == null)
                 {
-                    return Json(new { success = false, message = "Workflow not found" });
+                    return Json(new { success = false, message = "Original workflow not found" });
                 }
 
+                // Get current user
                 var currentEmployee = await GetCurrentEmployee();
                 if (currentEmployee == null)
                 {
                     return Json(new { success = false, message = "Unable to identify current user" });
                 }
 
-                var newToEmployee = await _context.Employees.FindAsync(toEmployeeId);
-                if (newToEmployee == null)
+                // Get target employee
+                var targetEmployee = await _context.Employees.FindAsync(toEmployeeId);
+                if (targetEmployee == null)
                 {
                     return Json(new { success = false, message = "Target employee not found" });
                 }
+
+                // Add remark to original workflow before forwarding
+                var forwardRemark = new FileWorkflowRemark
+                {
+                    WorkflowId = originalWorkflow.Id,
+                    EmployeeId = currentEmployee.Id,
+                    Remark = $"Forwarded to {targetEmployee.FullName} ({targetEmployee.Department}). Remark: {remark}",
+                    ActionType = "Forward",
+                    CreatedAt = DateTime.Now
+                };
+                _context.FileWorkflowRemarks.Add(forwardRemark);
+
+                // Update original workflow status
+                originalWorkflow.Status = "Forwarded";
+                originalWorkflow.UpdatedAt = DateTime.Now;
                 
-                // Create new workflow for forwarding
+                await _context.SaveChangesAsync();
+
+                // Create NEW workflow for forwarding (don't reuse the same FileId in a way that causes conflicts)
                 var newWorkflow = new FileWorkflow
                 {
-                    FileId = workflow.FileId,
-                    WorkflowNumber = $"FW-{workflow.WorkflowNumber}-{DateTime.Now:yyyyMMddHHmmss}",
-                    FromDepartment = workflow.ToDepartment,
-                    ToDepartment = newToEmployee.Department ?? "Unknown",
-                    FromEmployeeId = workflow.ToEmployeeId ?? workflow.FromEmployeeId,
+                    FileId = originalWorkflow.FileId,
+                    WorkflowNumber = $"FWD-{DateTime.Now:yyyyMMddHHmmss}-{new Random().Next(1000, 9999)}",
+                    FromDepartment = targetEmployee.Department ?? "Unknown",
+                    ToDepartment = targetEmployee.Department ?? "Unknown",
+                    FromEmployeeId = currentEmployee.Id,
                     ToEmployeeId = toEmployeeId,
-                    Subject = $"Forwarded: {workflow.Subject}",
-                    Description = $"Forwarded from {workflow.ToDepartment} to {newToEmployee.Department}",
+                    Subject = $"Forwarded: {originalWorkflow.Subject}",
+                    Description = $"Forwarded from {currentEmployee.FullName} to {targetEmployee.FullName}. Original workflow: {originalWorkflow.WorkflowNumber}",
                     Status = "Pending",
-                    Priority = workflow.Priority,
+                    Priority = originalWorkflow.Priority,
                     SentDate = DateTime.Now,
-                    DueDate = workflow.DueDate,
+                    DueDate = originalWorkflow.DueDate,
+                    IsUrgent = originalWorkflow.IsUrgent,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
                 
                 _context.FileWorkflows.Add(newWorkflow);
-                
-                // Update original workflow
-                workflow.Status = "Forwarded";
-                workflow.UpdatedAt = DateTime.Now;
-                
-                // Add remark to original workflow
-                var forwardRemark = new FileWorkflowRemark
+                await _context.SaveChangesAsync();
+
+                // Add initial remark to new workflow
+                var newWorkflowRemark = new FileWorkflowRemark
                 {
-                    WorkflowId = workflowId,
+                    WorkflowId = newWorkflow.Id,
                     EmployeeId = currentEmployee.Id,
-                    Remark = $"Forwarded to {newToEmployee.FullName} ({newToEmployee.Department}). Remark: {remark}",
-                    ActionType = "Forward",
+                    Remark = $"File forwarded to {targetEmployee.FullName}. Original message: {remark}",
+                    ActionType = "Send",
                     CreatedAt = DateTime.Now
                 };
-                _context.FileWorkflowRemarks.Add(forwardRemark);
-                
+                _context.FileWorkflowRemarks.Add(newWorkflowRemark);
                 await _context.SaveChangesAsync();
 
                 // Send notification to the forwarded employee
@@ -619,18 +625,27 @@ namespace PrisonEmployeeManagement.Controllers
                     toEmployeeId,
                     currentEmployee.Id,
                     newWorkflow.Id,
-                    workflow.Subject ?? "File"
+                    originalWorkflow.Subject ?? "File"
                 );
-                
-                return Json(new { success = true, message = "File forwarded successfully", newWorkflowId = newWorkflow.Id });
+
+                return Json(new { 
+                    success = true, 
+                    message = $"File forwarded successfully to {targetEmployee.FullName}", 
+                    newWorkflowId = newWorkflow.Id 
+                });
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error while forwarding file");
+                return Json(new { success = false, message = $"Database error: {ex.InnerException?.Message ?? ex.Message}" });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error forwarding file");
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
-
+                
         // GET: Workflow/Close/5
         [HttpGet]
         public async Task<IActionResult> Close(int id)

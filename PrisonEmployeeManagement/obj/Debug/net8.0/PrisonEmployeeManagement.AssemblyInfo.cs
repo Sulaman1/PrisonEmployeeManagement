@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PrisonEmployeeManagement")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10d5334bf7f23fed8cd2c426d06b4dcf6755bc01")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cbfa0fbd0e70f4c3cf14c9b349ff9720135be37a")]
 [assembly: System.Reflection.AssemblyProductAttribute("PrisonEmployeeManagement")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PrisonEmployeeManagement")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -6,164 +6,226 @@
     <title>@ViewData["Title"] - Prison Employee Management</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        html, body {
-            height: 100%;
-        }
-        
-        body {
-            display: flex;
-            flex-direction: column;
-            background-color: #f8f9fa;
-        }
-        
         .navbar-brand {
             font-weight: bold;
         }
-        
         .btn {
             margin: 2px;
         }
-        
         .card {
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
             margin-bottom: 20px;
         }
-        
-        main {
-            flex: 1 0 auto;
-        }
-        
         .footer {
-            flex-shrink: 0;
+            margin-top: 50px;
+            padding: 20px 0;
             background-color: #343a40 !important;
         }
-        
         .container-fluid {
             padding: 20px;
         }
-        
-        /* Table styles */
-        .table-responsive {
-            margin-top: 20px;
+        body {
+            background-color: #f8f9fa;
         }
-        
-        .table th {
-            background-color: #343a40;
+        .navbar-nav {
+            align-items: center;
+        }
+        .dropdown-menu {
+            min-width: 200px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-name {
             color: white;
+            margin-right: 10px;
         }
-        
-        /* Alert styles */
-        .alert {
-            margin-bottom: 20px;
+        /* Modal animations */
+        .modal.fade .modal-dialog {
+            transform: scale(0.8);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .modal.show .modal-dialog {
+            transform: scale(1);
+        }
+
+        /* File preview styles */
+        .file-preview-container {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .file-info-row {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .file-info-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 70vh;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+
+        .text-preview {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 70vh;
+            overflow: auto;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        @@media (max-width: 768px) {
+            .user-name {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" asp-controller="Employees" asp-action="Index">
-                <i class="fas fa-prison"></i> Prison Employee Management
+            <!-- Brand/Logo -->
+            <a class="navbar-brand" asp-controller="UserDashboard" asp-action="Index">
+                <i class="fas fa-prison"></i> Prison Management System
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+            
+            <!-- Toggle button for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" 
+                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="navbar-collapse collapse">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Employees" asp-action="Index">
-                            <i class="fas fa-users"></i> Employees
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Employees" asp-action="Create">
-                            <i class="fas fa-plus"></i> Add Employee
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="EFiles" asp-action="Index">
-                            <i class="fas fa-folder-open"></i> EFiling
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="workflowDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-tasks"></i> Workflow
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" asp-controller="Workflow" asp-action="Dashboard">Dashboard</a></li>
-                            <li><a class="dropdown-item" asp-controller="Workflow" asp-action="Inbox">Inbox</a></li>
-                            <li><a class="dropdown-item" asp-controller="Workflow" asp-action="Sent">Sent Items</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" asp-controller="Notification" asp-action="Index" title="Notifications">
-                            <i class="fas fa-bell"></i>
-                            <span id="notificationCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 10px;">
-                                0
-                            </span>
-                        </a>
-                    </li>
-
-                    @if (User.Identity.IsAuthenticated) // Or use session
+            
+            <!-- Navbar Content -->
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <!-- Left side navigation menu -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    @if (User.Identity.IsAuthenticated)
                     {
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="UserDashboard" asp-action="Index">
                                 <i class="fas fa-tachometer-alt"></i> Dashboard
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="EFiles" asp-action="Index">
+                                <i class="fas fa-folder-open"></i> My Files
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="workflowDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-tasks"></i> Workflow
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Workflow" asp-action="Inbox">
+                                    <i class="fas fa-inbox"></i> Inbox
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Workflow" asp-action="Sent">
+                                    <i class="fas fa-paper-plane"></i> Sent Items
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Workflow" asp-action="Dashboard">
+                                    <i class="fas fa-chart-line"></i> Dashboard
+                                </a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="PersonalFiles" asp-action="Index">
+                                <i class="fas fa-folder"></i> Personal Files
+                            </a>
+                        </li>
+                        @if (User.IsInRole("System Admin") || User.IsInRole("HR Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-cog"></i> Admin
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Employees">
+                                        <i class="fas fa-users"></i> Manage Employees
+                                    </a></li>
+                                    <li><a class="dropdown-item" asp-controller="Roles" asp-action="Index">
+                                        <i class="fas fa-lock"></i> Roles & Permissions
+                                    </a></li>
+                                </ul>
+                            </li>
+                        }
                     }
                 </ul>
+                
+                <!-- Right side - User menu -->
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" asp-controller="Notification" asp-action="Index" title="Notifications">
+                                <i class="fas fa-bell"></i>
+                                <span id="notificationCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 10px;">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle"></i> <span class="user-name">@User.Identity.Name</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                    <i class="fas fa-id-card"></i> My Profile
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
+                                    <i class="fas fa-key"></i> Change Password
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                }
+                else
+                {
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Login">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Register">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </li>
+                    </ul>
+                }
             </div>
         </div>
     </nav>
-    <!-- Add this to the navbar after the nav items -->
-    <ul class="navbar-nav ms-auto">
-        @if (User.Identity.IsAuthenticated)
-        {
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-user-circle"></i> @User.Identity.Name
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">
-                        <i class="fas fa-id-card"></i> My Profile
-                    </a></li>
-                    <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
-                        <i class="fas fa-key"></i> Change Password
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form asp-controller="Account" asp-action="Logout" method="post">
-                            <button type="submit" class="dropdown-item">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </li>
-        }
-        else
-        {
-            <li class="nav-item">
-                <a class="nav-link" asp-controller="Account" asp-action="Login">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" asp-controller="Account" asp-action="Register">
-                    <i class="fas fa-user-plus"></i> Register
-                </a>
-            </li>
-        }
-    </ul>
     
-    <main>
+    <main role="main">
         <div class="container-fluid">
             @RenderBody()
         </div>
@@ -171,32 +233,38 @@
     
     <footer class="footer bg-dark text-white py-3">
         <div class="container text-center">
-            <span>&copy; 2026 - Prison Employee Management System. All rights reserved.</span>
+            <span>&copy; 2024 - Prison Employee Management System. All rights reserved.</span>
         </div>
     </footer>
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        // Load notification count on page load
+        function loadNotificationCount() {
+            $.get('/Notification/UnreadCount', function(data) {
+                if (data.count > 0) {
+                    $('#notificationCount').text(data.count);
+                    $('#notificationCount').show();
+                } else {
+                    $('#notificationCount').hide();
+                }
+            }).fail(function() {
+                console.log('Failed to load notification count');
+            });
+        }
+        
+        $(document).ready(function() {
+            loadNotificationCount();
+            // Refresh every 30 seconds
+            setInterval(loadNotificationCount, 30000);
+        });
+    </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
-</html>
 
-<script>
-    function loadNotificationCount() {
-        $.get('/Notification/UnreadCount', function(data) {
-            if (data.count > 0) {
-                $('#notificationCount').text(data.count);
-                $('#notificationCount').show();
-            } else {
-                $('#notificationCount').hide();
-            }
-        }).fail(function() {
-            console.log('Failed to load notification count');
-        });
-    }
-    $(document).ready(function() {
-        loadNotificationCount();
-        // Refresh every 30 seconds
-        setInterval(loadNotificationCount, 30000);
-    });
-</script>
+

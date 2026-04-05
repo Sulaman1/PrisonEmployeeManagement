@@ -16,71 +16,52 @@ namespace PrisonEmployeeManagement.Models
         public virtual EFile? File { get; set; }
 
         [Required]
-        [Display(Name = "Workflow Number")]
         [StringLength(50)]
         public string WorkflowNumber { get; set; } = string.Empty;
 
         [Required]
-        [Display(Name = "From Department")]
         [StringLength(100)]
         public string FromDepartment { get; set; } = string.Empty;
 
         [Required]
-        [Display(Name = "To Department")]
         [StringLength(100)]
         public string ToDepartment { get; set; } = string.Empty;
 
         [Required]
-        [Display(Name = "From Employee")]
         public int FromEmployeeId { get; set; }
 
         [ForeignKey("FromEmployeeId")]
         public virtual Employee? FromEmployee { get; set; }
 
-        [Display(Name = "To Employee")]
-        public int? ToEmployeeId { get; set; }  // Made nullable
+        public int? ToEmployeeId { get; set; }
 
         [ForeignKey("ToEmployeeId")]
         public virtual Employee? ToEmployee { get; set; }
 
-        [Display(Name = "Subject")]
         [StringLength(200)]
         public string? Subject { get; set; }
 
-        [Display(Name = "Description")]
         public string? Description { get; set; }
 
-        [Display(Name = "Status")]
+        [Required]
         [StringLength(30)]
         public string Status { get; set; } = "Pending";
 
-        [Display(Name = "Priority")]
         [StringLength(20)]
         public string? Priority { get; set; }
 
-        [Display(Name = "Sent Date")]
-        [DataType(DataType.DateTime)]
         public DateTime SentDate { get; set; }
 
-        [Display(Name = "Received Date")]
-        [DataType(DataType.DateTime)]
         public DateTime? ReceivedDate { get; set; }
 
-        [Display(Name = "Completed Date")]
-        [DataType(DataType.DateTime)]
         public DateTime? CompletedDate { get; set; }
 
-        [Display(Name = "Due Date")]
-        [DataType(DataType.Date)]
         public DateTime? DueDate { get; set; }
 
-        [Display(Name = "IsUrgent")]
         public bool IsUrgent { get; set; }
 
-        [Display(Name = "Created Date")]
         public DateTime CreatedAt { get; set; }
 
-        [Display(Name = "Last Updated")]
         public DateTime UpdatedAt { get; set; }
     }
 

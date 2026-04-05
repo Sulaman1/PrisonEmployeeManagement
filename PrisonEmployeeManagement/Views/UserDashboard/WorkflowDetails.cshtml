@@ -2,18 +2,28 @@
 @{
     ViewData["Title"] = "Workflow Details";
     var remarks = ViewBag.Remarks as List<PrisonEmployeeManagement.Models.FileWorkflowRemark>;
-    int currentUserId = ViewBag.CurrentUserId ?? 0;
-    bool canAct = Model.ToEmployeeId == currentUserId && Model.Status == "Pending";
+    var currentUserId = ViewBag.CurrentUserId as int? ?? 0;
+    var canAct = Model.ToEmployeeId == currentUserId && Model.Status == "Pending";
+    var canClose = (Model.Status == "Approved" || Model.Status == "Completed") && Model.Status != "Closed";
 }
 
 <div class="row">
     <div class="col-md-8">
         <div class="card">
             <div class="card-header bg-info text-white">
-                <h3>Workflow Details: @Model.WorkflowNumber</h3>
+                <h3><i class="fas fa-tasks"></i> Workflow Details: @Model.WorkflowNumber</h3>
             </div>
             <div class="card-body">
-                <div class="alert alert-@(Model.Priority == "Urgent" ? "danger" : "info")">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                }
+
+                <div class="alert alert-@(Model.Priority == "Urgent" ? "danger" : Model.Priority == "High" ? "warning" : "info")">
                     <strong>File:</strong> @Model.File?.FileNumber - @Model.File?.FileTitle<br />
                     <strong>Subject:</strong> @Model.Subject<br />
                     <strong>Priority:</strong> @Model.Priority
@@ -34,6 +44,9 @@
                             
                             <dt class="col-sm-4">Sent Date:</dt>
                             <dd class="col-sm-8">@Model.SentDate.ToString("MM/dd/yyyy HH:mm")</dd>
+                            
+                            <dt class="col-sm-4">Received Date:</dt>
+                            <dd class="col-sm-8">@(Model.ReceivedDate?.ToString("MM/dd/yyyy HH:mm") ?? "Not yet received")</dd>
                         </dl>
                     </div>
                     <div class="col-md-6">
@@ -42,131 +55,106 @@
                             <dd class="col-sm-8">
                                 <span class="badge bg-@(Model.Status == "Completed" ? "success" : 
                                                       Model.Status == "Pending" ? "warning" : 
-                                                      Model.Status == "Rejected" ? "danger" : "info")">
+                                                      Model.Status == "Rejected" ? "danger" : 
+                                                      Model.Status == "Closed" ? "secondary" : "info")">
                                     @Model.Status
                                 </span>
                             </dd>
                             
-                            <dt class="col-sm-4">Received Date:</dt>
-                            <dd class="col-sm-8">@(Model.ReceivedDate?.ToString("MM/dd/yyyy HH:mm") ?? "Not yet received")</dd>
+                            <dt class="col-sm-4">Priority:</dt>
+                            <dd class="col-sm-8">@Model.Priority</dd>
                             
                             <dt class="col-sm-4">Due Date:</dt>
                             <dd class="col-sm-8">@(Model.DueDate?.ToString("MM/dd/yyyy") ?? "N/A")</dd>
+                            
+                            <dt class="col-sm-4">Completed Date:</dt>
+                            <dd class="col-sm-8">@(Model.CompletedDate?.ToString("MM/dd/yyyy HH:mm") ?? "Not completed")</dd>
                         </dl>
                     </div>
                 </div>
 
-                <h5>Timeline & Remarks</h5>
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="alert alert-secondary">
+                        <strong>Description:</strong><br />
+                        @Model.Description
+                    </div>
+                }
+
+                <h5><i class="fas fa-history"></i> Timeline & Remarks</h5>
                 <div class="timeline">
-                    @if (remarks != null)
+                    @if (remarks != null && remarks.Any())
                     {
                         foreach (var remark in remarks.OrderBy(r => r.CreatedAt))
                         {
-                            <div class="timeline-item">
-                                <div class="timeline-badge bg-@(remark.ActionType == "Send" ? "primary" : 
-                                                               remark.ActionType == "Receive" ? "info" :
-                                                               remark.ActionType == "Approve" ? "success" :
-                                                               remark.ActionType == "Reject" ? "danger" : "secondary")">
-                                    <i class="fas fa-@(remark.ActionType == "Send" ? "paper-plane" :
-                                                       remark.ActionType == "Receive" ? "inbox" :
-                                                       remark.ActionType == "Approve" ? "check" :
-                                                       remark.ActionType == "Reject" ? "times" : "comment")"></i>
-                                </div>
-                                <div class="timeline-panel">
-                                    <div class="timeline-heading">
-                                        <h5 class="timeline-title">@remark.ActionType</h5>
-                                        <p>
+                            <div class="timeline-item mb-3">
+                                <div class="card border-left-@(remark.ActionType == "Send" ? "primary" : 
+                                                              remark.ActionType == "Receive" ? "info" :
+                                                              remark.ActionType == "Approve" ? "success" :
+                                                              remark.ActionType == "Reject" ? "danger" : 
+                                                              remark.ActionType == "Close" ? "secondary" : "secondary")">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong><i class="fas fa-user"></i> @remark.Employee?.FullName</strong>
+                                                <span class="badge bg-@(remark.ActionType == "Send" ? "primary" : 
+                                                                      remark.ActionType == "Receive" ? "info" :
+                                                                      remark.ActionType == "Approve" ? "success" :
+                                                                      remark.ActionType == "Reject" ? "danger" : 
+                                                                      remark.ActionType == "Close" ? "secondary" : "secondary") ms-2">
+                                                    @remark.ActionType
+                                                </span>
+                                            </div>
                                             <small class="text-muted">
-                                                <i class="fas fa-user"></i> @remark.Employee?.FullName |
                                                 <i class="fas fa-clock"></i> @remark.CreatedAt.ToString("MM/dd/yyyy HH:mm")
                                             </small>
-                                        </p>
-                                    </div>
-                                    <div class="timeline-body">
-                                        <p>@remark.Remark</p>
+                                        </div>
+                                        <p class="mt-2 mb-0">@remark.Remark</p>
+                                        @if (!string.IsNullOrEmpty(remark.AttachmentPath))
+                                        {
+                                            <div class="mt-2">
+                                                <a href="@remark.AttachmentPath" class="btn btn-sm btn-link" target="_blank">
+                                                    <i class="fas fa-paperclip"></i> View Attachment
+                                                </a>
+                                            </div>
+                                        }
                                     </div>
                                 </div>
                             </div>
                         }
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">No remarks added yet.</div>
                     }
                 </div>
             </div>
         </div>
     </div>
 
-    @if (canAct)
-    {
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5>Take Action</h5>
+    <div class="col-md-4">
+        @if (canAct)
+        {
+            @await Html.PartialAsync("_AddRemarkPartial", Model.Id)
+        }
+
+        @if (canClose)
+        {
+            <div class="card mt-3">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="fas fa-archive"></i> Close File</h5>
                 </div>
                 <div class="card-body">
-                    <form id="actionForm">
-                        <input type="hidden" id="workflowId" value="@Model.Id" />
-                        <input type="hidden" id="userId" value="@currentUserId" />
-                        
-                        <div class="form-group mb-3">
-                            <label>Action Type</label>
-                            <select id="actionType" class="form-control">
-                                <option value="Receive">Receive</option>
-                                <option value="Approve">Approve</option>
-                                <option value="Reject">Reject</option>
-                                <option value="Complete">Complete</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label>Remarks</label>
-                            <textarea id="remark" class="form-control" rows="3" required></textarea>
-                        </div>
-                        
-                        <button type="button" onclick="submitAction()" class="btn btn-primary w-100">
-                            Submit
-                        </button>
-                    </form>
+                    <p>Once closed, no further actions can be taken on this file.</p>
+                    <a asp-action="CloseWorkflow" asp-route-id="@Model.Id" class="btn btn-danger w-100" 
+                       onclick="return confirm('Are you sure you want to close this file? This action cannot be undone.')">
+                        <i class="fas fa-archive"></i> Close File
+                    </a>
                 </div>
             </div>
-        </div>
-    }
-</div>
-
-@section Scripts {
-    <script>
-        function submitAction() {
-            var workflowId = $('#workflowId').val();
-            var userId = $('#userId').val();
-            var actionType = $('#actionType').val();
-            var remark = $('#remark').val();
-            
-            if (!remark) {
-                alert('Please enter remarks');
-                return;
-            }
-            
-            $.ajax({
-                url: '/UserDashboard/AddRemark',
-                type: 'POST',
-                data: {
-                    workflowId: workflowId,
-                    userId: userId,
-                    actionType: actionType,
-                    remark: remark
-                },
-                success: function(response) {
-                    if (response.success) {
-                        location.reload();
-                    } else {
-                        alert('Error: ' + response.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    alert('Error: ' + error);
-                }
-            });
         }
-    </script>
-}
+    </div>
+</div>
 
 <style>
     .timeline {
@@ -176,30 +164,36 @@
     
     .timeline-item {
         position: relative;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
     }
     
-    .timeline-badge {
-        position: absolute;
-        left: 0;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 40px;
-        color: white;
+    .border-left-primary {
+        border-left: 4px solid #007bff;
     }
     
-    .timeline-panel {
-        margin-left: 60px;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 5px;
-        border: 1px solid #dee2e6;
+    .border-left-info {
+        border-left: 4px solid #17a2b8;
     }
     
-    .timeline-title {
-        margin-top: 0;
-        margin-bottom: 5px;
+    .border-left-success {
+        border-left: 4px solid #28a745;
+    }
+    
+    .border-left-danger {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .border-left-secondary {
+        border-left: 4px solid #6c757d;
+    }
+    
+    .card-body {
+        position: relative;
+    }
+    
+    .badge {
+        font-size: 0.8em;
     }
 </style>
+
+

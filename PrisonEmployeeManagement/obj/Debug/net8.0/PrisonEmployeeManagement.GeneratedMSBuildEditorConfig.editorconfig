@@ -150,6 +150,34 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTm90aWZpY2F0aW9uL0luZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/PersonalFiles/AddAction.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGVyc29uYWxGaWxlcy9BZGRBY3Rpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/PersonalFiles/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGVyc29uYWxGaWxlcy9DcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/PersonalFiles/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGVyc29uYWxGaWxlcy9EZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/PersonalFiles/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGVyc29uYWxGaWxlcy9EZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/PersonalFiles/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGVyc29uYWxGaWxlcy9FZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/PersonalFiles/EditAction.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGVyc29uYWxGaWxlcy9FZGl0QWN0aW9uLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/PersonalFiles/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGVyc29uYWxGaWxlcy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/Postings/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUG9zdGluZ3MvQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -164,6 +192,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/Postings/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUG9zdGluZ3MvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/Shared/_FileViewModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19GaWxlVmlld01vZGFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/Shared/_Layout.cshtml]
@@ -198,12 +230,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlckRhc2hib2FyZC9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/UserDashboard/MyFiles.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlckRhc2hib2FyZC9NeUZpbGVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/UserDashboard/MyWorkflows.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlckRhc2hib2FyZC9NeVdvcmtmbG93cy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/UserDashboard/WorkflowDetails.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlckRhc2hib2FyZC9Xb3JrZmxvd0RldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/UserDashboard/_AddRemarkPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVXNlckRhc2hib2FyZC9fQWRkUmVtYXJrUGFydGlhbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/Views/Workflow/Dashboard.cshtml]

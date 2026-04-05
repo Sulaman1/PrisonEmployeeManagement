@@ -17,6 +17,8 @@ namespace PrisonEmployeeManagement.Data
         public DbSet<EmployeeTraining> EmployeeTrainings { get; set; }
         public DbSet<EmployeeAward> EmployeeAwards { get; set; }
         public DbSet<EmployeeLeave> EmployeeLeaves { get; set; }
+        public DbSet<PersonalFile> PersonalFiles { get; set; }
+        public DbSet<PersonalFileAction> PersonalFileActions { get; set; }
         public DbSet<EFile> EFiles { get; set; }
         public DbSet<FileAccessLog> FileAccessLogs { get; set; }
         public DbSet<FileWorkflow> FileWorkflows { get; set; }
@@ -114,6 +116,41 @@ namespace PrisonEmployeeManagement.Data
                 entity.HasOne(e => e.Employee)
                     .WithMany(e => e.Leaves)
                     .HasForeignKey(e => e.EmployeeId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            
+            modelBuilder.Entity<PersonalFile>(entity =>
+            {
+                entity.ToTable("PersonalFiles");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.FileNumber).IsUnique();
+                entity.HasIndex(e => e.EmployeeId);
+                entity.HasIndex(e => e.Status);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.ReceivedDate).HasColumnType("datetime2");
+                entity.Property(e => e.DateOfSending).HasColumnType("datetime2");
+                entity.Property(e => e.FinalDecisionDate).HasColumnType("datetime2");
+                
+                entity.HasOne(e => e.Employee)
+                    .WithMany()
+                    .HasForeignKey(e => e.EmployeeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<PersonalFileAction>(entity =>
+            {
+                entity.ToTable("PersonalFileActions");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.PersonalFileId);
+                entity.HasIndex(e => e.ActionDate);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.ActionDate).HasColumnType("datetime2");
+                entity.Property(e => e.NextActionDate).HasColumnType("datetime2");
+                
+                entity.HasOne(e => e.PersonalFile)
+                    .WithMany(e => e.Actions)
+                    .HasForeignKey(e => e.PersonalFileId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
             

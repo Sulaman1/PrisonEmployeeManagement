@@ -1,0 +1,59 @@
+@model PrisonEmployeeManagement.Models.PersonalFileAction
+@{
+    ViewData["Title"] = "Edit Action";
+}
+
+<div class="card">
+    <div class="card-header bg-warning text-white">
+        <h3><i class="fas fa-edit"></i> Edit Action</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="EditAction" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="PersonalFileId" />
+
+            <div class="form-group mb-3">
+                <label asp-for="ActionDate" class="fw-bold"></label>
+                <input asp-for="ActionDate" class="form-control" type="date" required />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ActionTaken" class="fw-bold"></label>
+                <textarea asp-for="ActionTaken" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Remarks" class="fw-bold"></label>
+                <textarea asp-for="Remarks" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="NextActionDate" class="fw-bold"></label>
+                        <input asp-for="NextActionDate" class="form-control" type="date" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="StatusAfterAction" class="fw-bold"></label>
+                        <select asp-for="StatusAfterAction" class="form-control" asp-items="ViewBag.Statuses">
+                            <option value="">-- No change --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a asp-action="Details" asp-route-id="@Model.PersonalFileId" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

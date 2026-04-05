@@ -1,0 +1,136 @@
+@model IEnumerable<PrisonEmployeeManagement.Models.EFile>
+@{
+    ViewData["Title"] = "My Files";
+    var employee = ViewBag.Employee as PrisonEmployeeManagement.Models.Employee;
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3><i class="fas fa-folder-open"></i> My Files</h3>
+        <p class="mb-0">Files related to: @employee?.FullName (ID: @employee?.EmployeeNumber)</p>
+    </div>
+    <div class="card-body">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="filesTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>File Number</th>
+                        <th>File Title</th>
+                        <th>Category</th>
+                        <th>File Type</th>
+                        <th>Size (KB)</th>
+                        <th>Upload Date</th>
+                        <th>Status</th>
+                        <th>Confidential</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.FileNumber</td>
+                            <td>@item.FileTitle</td>
+                            <td>
+                                <span class="badge bg-info">@item.Category</span>
+                            </td>
+                            <td>@item.FileType</td>
+                            <td>@(item.FileSize?.ToString("N0") ?? "0")</td>
+                            <td>@item.UploadDate.ToString("MM/dd/yyyy")</td>
+                            <td>
+                                @if (item.Status == "Active")
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Archived</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.ConfidentialLevel == "Top Secret")
+                                {
+                                    <span class="badge bg-danger">Top Secret</span>
+                                }
+                                else if (item.ConfidentialLevel == "Secret")
+                                {
+                                    <span class="badge bg-warning">Secret</span>
+                                }
+                                else if (item.ConfidentialLevel == "Confidential")
+                                {
+                                    <span class="badge bg-info">Confidential</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@item.ConfidentialLevel</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-controller="EFiles" asp-action="Details" asp-route-id="@item.Id" 
+                                       class="btn btn-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if (!string.IsNullOrEmpty(item.FilePath))
+                                    {
+                                        <a asp-controller="EFiles" asp-action="Download" asp-route-id="@item.Id" 
+                                           class="btn btn-success" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> No files found related to you.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#filesTable').DataTable({
+                "pageLength": 10,
+                "language": {
+                    "search": "Search:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ entries"
+                }
+            });
+        });
+    </script>
+}
+
+<style>
+    .btn-group-sm .btn {
+        margin: 0 2px;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+

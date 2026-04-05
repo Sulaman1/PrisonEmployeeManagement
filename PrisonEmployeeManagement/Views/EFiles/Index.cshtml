@@ -1,17 +1,28 @@
 @model PrisonEmployeeManagement.Models.EFileSearchViewModel
 @{
-    ViewData["Title"] = "Electronic Filing System";
+    ViewData["Title"] = "My Files";
 }
+@await Html.PartialAsync("_FileViewModal")
+
 
 <div class="card">
     <div class="card-header bg-primary text-white">
-        <h3><i class="fas fa-folder-open"></i> Electronic Filing System (EFiling)</h3>
+        <h3><i class="fas fa-folder-open"></i> My Files</h3>
+        <p class="mb-0">Viewing files for: @ViewBag.CurrentEmployeeName (ID: @ViewBag.CurrentEmployeeId)</p>
+        <small>You can only see files that are assigned to you or that you are involved with.</small>
     </div>
     <div class="card-body">
         @if (TempData["SuccessMessage"] != null)
         {
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         }
@@ -24,87 +35,106 @@
 
         <!-- Search Form -->
         <form asp-action="Index" method="get" class="mb-4">
-            <div class="row">
-                <div class="col-md-3">
+            <div class="row g-2">
+                <div class="col-md-4">
                     <input type="text" name="searchTerm" class="form-control" 
                            placeholder="Search by file number, title..." 
                            value="@Model.SearchTerm" />
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <select name="category" class="form-control" asp-items="ViewBag.Categories">
                         <option value="">All Categories</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <select name="status" class="form-control" asp-items="ViewBag.Statuses">
                         <option value="">All Statuses</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <select name="employeeId" class="form-control" asp-items="ViewBag.Employees">
-                        <option value="">All Employees</option>
-                    </select>
-                </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search"></i> Search
+                        <i class="fas fa-search"></i> Filter
                     </button>
                 </div>
             </div>
         </form>
 
-        <!-- Files Table -->
+        <!-- Files Table - Fixed Structure -->
         <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>File Number</th>
-                        <th>Title</th>
-                        <th>Category</th>
-                        <th>Related To</th>
-                        <th>Upload Date</th>
-                        <th>Size</th>
-                        <th>Status</th>
-                        <th>Confidential</th>
-                        <th>Actions</th>
+            <table class="table table-bordered table-striped table-hover" id="filesTable" style="width: 100%;">
+                <thead>
+                    <tr class="table-dark">
+                        <th style="width: 10%">File Number</th>
+                        <th style="width: 20%">Title</th>
+                        <th style="width: 10%">Category</th>
+                        <th style="width: 15%">Related To</th>
+                        <th style="width: 10%">Upload Date</th>
+                        <th style="width: 8%">Size (KB)</th>
+                        <th style="width: 8%">Status</th>
+                        <th style="width: 9%">Confidential</th>
+                        <th style="width: 10%">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.Files)
+                    @if (Model.Files != null && Model.Files.Any())
+                    {
+                        @foreach (var item in Model.Files)
+                        {
+                            <tr>
+                                <td>@item.FileNumber</td>
+                                <td>@item.FileTitle</td>
+                                <td><span class="badge bg-info">@item.Category</span></td>
+                                <td>@item.EmployeeName</td>
+                                <td>@item.UploadDate.ToString("MM/dd/yyyy")</td>
+                                <td class="text-end">@(item.FileSize?.ToString("N0") ?? "0")</td>
+                                <td>
+                                    @if (item.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Archived</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        string badgeClass = item.ConfidentialLevel == "Top Secret" ? "danger" :
+                                                          item.ConfidentialLevel == "Secret" ? "warning" :
+                                                          item.ConfidentialLevel == "Confidential" ? "info" : "secondary";
+                                    }
+                                    <span class="badge bg-@badgeClass">@item.ConfidentialLevel</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <!-- View Button - Opens Modal -->
+                                        <button type="button" class="btn btn-info" onclick="viewFileDetails(@item.Id)" title="Quick View">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Download" asp-route-id="@item.Id" class="btn btn-success" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        @if (item.Status == "Active")
+                                        {
+                                            <a asp-controller="Workflow" asp-action="Send" asp-route-fileId="@item.Id" 
+                                               class="btn btn-primary" title="Send to Department">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td>@item.FileNumber</td>
-                            <td>@item.FileTitle</td>
-                            <td><span class="badge bg-info">@item.Category</span></td>
-                            <td>@item.EmployeeName</td>
-                            <td>@item.UploadDate.ToString("MM/dd/yyyy")</td>
-                            <td>@(item.FileSize?.ToString("N0") ?? "0") KB</td>
-                            <td>
-                                <span class="badge bg-@(item.Status == "Active" ? "success" : "secondary")">
-                                    @item.Status
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge bg-@(item.ConfidentialLevel == "Top Secret" ? "danger" : 
-                                                      item.ConfidentialLevel == "Secret" ? "warning" : 
-                                                      item.ConfidentialLevel == "Confidential" ? "info" : "secondary")">
-                                    @item.ConfidentialLevel
-                                </span>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a asp-action="Download" asp-route-id="@item.Id" class="btn btn-success" title="Download">
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                            <td colspan="9" class="text-center">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle"></i> No files found. Files will appear here when they are assigned to you or when you are involved in workflows.
                                 </div>
                             </td>
                         </tr>
@@ -112,12 +142,84 @@
                 </tbody>
             </table>
         </div>
-
-        @if (!Model.Files.Any())
-        {
-            <div class="alert alert-info text-center">
-                <i class="fas fa-info-circle"></i> No files found. Click "Upload New File" to add one.
-            </div>
-        }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable if there are rows
+            if ($('#filesTable tbody tr').length > 1 || ($('#filesTable tbody tr').length === 1 && !$('#filesTable tbody tr td').hasClass('text-center'))) {
+                $('#filesTable').DataTable({
+                    "pageLength": 10,
+                    "order": [[4, "desc"]], // Sort by upload date descending
+                    "language": {
+                        "search": "Search:",
+                        "lengthMenu": "Show _MENU_ entries",
+                        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                        "infoEmpty": "Showing 0 to 0 of 0 entries",
+                        "zeroRecords": "No matching records found"
+                    },
+                    "columnDefs": [
+                        { "orderable": false, "targets": [8] } // Disable sorting on actions column
+                    ]
+                });
+            }
+        });
+    </script>
+}
+
+<style>
+    /* Ensure table stays within container */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        min-width: 800px;
+    }
+    
+    .table th, 
+    .table td {
+        vertical-align: middle;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+    
+    .text-end {
+        text-align: right;
+    }
+    
+    /* Fix for alert inside table */
+    .table .alert {
+        margin-bottom: 0;
+        padding: 0.5rem;
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .table th,
+        .table td {
+            font-size: 0.85rem;
+            padding: 0.5rem;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.7rem;
+        }
+    }
+</style>
+

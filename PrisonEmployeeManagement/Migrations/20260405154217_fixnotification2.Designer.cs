@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PrisonEmployeeManagement.Data;
 
@@ -11,9 +12,11 @@ using PrisonEmployeeManagement.Data;
 namespace PrisonEmployeeManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260405154217_fixnotification2")]
+    partial class fixnotification2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -549,7 +552,7 @@ namespace PrisonEmployeeManagement.Migrations
                             Id = 1,
                             BadgeNumber = "B12345",
                             Country = "USA",
-                            CreatedAt = new DateTime(2026, 4, 6, 0, 9, 2, 901, DateTimeKind.Local).AddTicks(1658),
+                            CreatedAt = new DateTime(2026, 4, 5, 20, 42, 13, 677, DateTimeKind.Local).AddTicks(1141),
                             CreatedBy = "System",
                             DateOfBirth = new DateTime(1985, 5, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Department = "Security",
@@ -566,14 +569,14 @@ namespace PrisonEmployeeManagement.Migrations
                             Position = "Correctional Officer",
                             SecurityClearanceLevel = "Level 3",
                             ShiftSchedule = "Day Shift",
-                            UpdatedAt = new DateTime(2026, 4, 6, 0, 9, 2, 901, DateTimeKind.Local).AddTicks(1726)
+                            UpdatedAt = new DateTime(2026, 4, 5, 20, 42, 13, 677, DateTimeKind.Local).AddTicks(1220)
                         },
                         new
                         {
                             Id = 2,
                             BadgeNumber = "B12346",
                             Country = "USA",
-                            CreatedAt = new DateTime(2026, 4, 6, 0, 9, 2, 901, DateTimeKind.Local).AddTicks(1751),
+                            CreatedAt = new DateTime(2026, 4, 5, 20, 42, 13, 677, DateTimeKind.Local).AddTicks(1240),
                             CreatedBy = "System",
                             DateOfBirth = new DateTime(1990, 8, 22, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Department = "Administration",
@@ -590,7 +593,7 @@ namespace PrisonEmployeeManagement.Migrations
                             Position = "Administrative Officer",
                             SecurityClearanceLevel = "Level 2",
                             ShiftSchedule = "Day Shift",
-                            UpdatedAt = new DateTime(2026, 4, 6, 0, 9, 2, 901, DateTimeKind.Local).AddTicks(1756)
+                            UpdatedAt = new DateTime(2026, 4, 5, 20, 42, 13, 677, DateTimeKind.Local).AddTicks(1245)
                         });
                 });
 
@@ -1216,144 +1219,6 @@ namespace PrisonEmployeeManagement.Migrations
                     b.ToTable("Permissions");
                 });
 
-            modelBuilder.Entity("PrisonEmployeeManagement.Models.PersonalFile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ActionTaken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CurrentLocation")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("DateOfSending")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("FileNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("FinalDecision")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("FinalDecisionBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("FinalDecisionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Priority")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("ReceivedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SentBy")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("SentByDepartment")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("FileNumber")
-                        .IsUnique();
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("PersonalFiles", (string)null);
-                });
-
-            modelBuilder.Entity("PrisonEmployeeManagement.Models.PersonalFileAction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ActionBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("ActionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ActionTaken")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime?>("NextActionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PersonalFileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Remarks")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StatusAfterAction")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActionDate");
-
-                    b.HasIndex("PersonalFileId");
-
-                    b.ToTable("PersonalFileActions", (string)null);
-                });
-
             modelBuilder.Entity("PrisonEmployeeManagement.Models.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -1727,27 +1592,6 @@ namespace PrisonEmployeeManagement.Migrations
                     b.Navigation("Workflow");
                 });
 
-            modelBuilder.Entity("PrisonEmployeeManagement.Models.PersonalFile", b =>
-                {
-                    b.HasOne("PrisonEmployeeManagement.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Employee");
-                });
-
-            modelBuilder.Entity("PrisonEmployeeManagement.Models.PersonalFileAction", b =>
-                {
-                    b.HasOne("PrisonEmployeeManagement.Models.PersonalFile", "PersonalFile")
-                        .WithMany("Actions")
-                        .HasForeignKey("PersonalFileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PersonalFile");
-                });
-
             modelBuilder.Entity("PrisonEmployeeManagement.Models.RolePermission", b =>
                 {
                     b.HasOne("PrisonEmployeeManagement.Models.Permission", "Permission")
@@ -1808,11 +1652,6 @@ namespace PrisonEmployeeManagement.Migrations
                     b.Navigation("Postings");
 
                     b.Navigation("Trainings");
-                });
-
-            modelBuilder.Entity("PrisonEmployeeManagement.Models.PersonalFile", b =>
-                {
-                    b.Navigation("Actions");
                 });
 
             modelBuilder.Entity("PrisonEmployeeManagement.Models.Role", b =>

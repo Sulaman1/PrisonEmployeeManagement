@@ -6,6 +6,8 @@
     var sentWorkflows = ViewBag.SentWorkflows as IEnumerable<PrisonEmployeeManagement.Models.FileWorkflow>;
     var notifications = ViewBag.Notifications as IEnumerable<PrisonEmployeeManagement.Models.Notification>;
 }
+@await Html.PartialAsync("_FileViewModal")
+
 
 <div class="container-fluid">
     <!-- Welcome Section -->
@@ -152,6 +154,10 @@
                                                    class="btn btn-sm btn-primary">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
+                                                <button onclick="viewFileDetails(@item.FileId)" class="btn btn-sm btn-info" title="View File">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                
                                             </td>
                                         </tr>
                                     }
@@ -290,12 +296,20 @@
                     <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
                 </div>
                 <div class="card-body">
+                    <a asp-action="MyFiles" asp-route-userId="@employee?.Id" class="btn btn-primary">
+                        <i class="fas fa-folder-open"></i> My Files
+                    </a>
+                    <a asp-controller="Workflow" asp-action="Inbox" class="btn btn-info">
+                        <i class="fas fa-inbox"></i> My Inbox
+                    </a>
+                    <a asp-controller="Workflow" asp-action="Sent" class="btn btn-success">
+                        <i class="fas fa-paper-plane"></i> Sent Items
+                    </a>
+                
                     <a asp-controller="EFiles" asp-action="Create" class="btn btn-primary">
                         <i class="fas fa-upload"></i> Upload New File
                     </a>
-                    <a asp-controller="Workflow" asp-action="Inbox" class="btn btn-info">
-                        <i class="fas fa-inbox"></i> View Full Inbox
-                    </a>
+                    
                     <a asp-controller="Workflow" asp-action="Dashboard" class="btn btn-success">
                         <i class="fas fa-chart-line"></i> Workflow Dashboard
                     </a>
