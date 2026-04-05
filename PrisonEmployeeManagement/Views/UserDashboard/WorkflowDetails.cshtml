@@ -1,0 +1,205 @@
+@model PrisonEmployeeManagement.Models.FileWorkflow
+@{
+    ViewData["Title"] = "Workflow Details";
+    var remarks = ViewBag.Remarks as List<PrisonEmployeeManagement.Models.FileWorkflowRemark>;
+    int currentUserId = ViewBag.CurrentUserId ?? 0;
+    bool canAct = Model.ToEmployeeId == currentUserId && Model.Status == "Pending";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h3>Workflow Details: @Model.WorkflowNumber</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-@(Model.Priority == "Urgent" ? "danger" : "info")">
+                    <strong>File:</strong> @Model.File?.FileNumber - @Model.File?.FileTitle<br />
+                    <strong>Subject:</strong> @Model.Subject<br />
+                    <strong>Priority:</strong> @Model.Priority
+                    @if (Model.IsUrgent)
+                    {
+                        <span class="badge bg-danger ms-2">URGENT</span>
+                    }
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">From:</dt>
+                            <dd class="col-sm-8">@Model.FromEmployee?.FullName (@Model.FromDepartment)</dd>
+                            
+                            <dt class="col-sm-4">To:</dt>
+                            <dd class="col-sm-8">@Model.ToEmployee?.FullName (@Model.ToDepartment)</dd>
+                            
+                            <dt class="col-sm-4">Sent Date:</dt>
+                            <dd class="col-sm-8">@Model.SentDate.ToString("MM/dd/yyyy HH:mm")</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Status:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-@(Model.Status == "Completed" ? "success" : 
+                                                      Model.Status == "Pending" ? "warning" : 
+                                                      Model.Status == "Rejected" ? "danger" : "info")">
+                                    @Model.Status
+                                </span>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Received Date:</dt>
+                            <dd class="col-sm-8">@(Model.ReceivedDate?.ToString("MM/dd/yyyy HH:mm") ?? "Not yet received")</dd>
+                            
+                            <dt class="col-sm-4">Due Date:</dt>
+                            <dd class="col-sm-8">@(Model.DueDate?.ToString("MM/dd/yyyy") ?? "N/A")</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <h5>Timeline & Remarks</h5>
+                <div class="timeline">
+                    @if (remarks != null)
+                    {
+                        foreach (var remark in remarks.OrderBy(r => r.CreatedAt))
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-badge bg-@(remark.ActionType == "Send" ? "primary" : 
+                                                               remark.ActionType == "Receive" ? "info" :
+                                                               remark.ActionType == "Approve" ? "success" :
+                                                               remark.ActionType == "Reject" ? "danger" : "secondary")">
+                                    <i class="fas fa-@(remark.ActionType == "Send" ? "paper-plane" :
+                                                       remark.ActionType == "Receive" ? "inbox" :
+                                                       remark.ActionType == "Approve" ? "check" :
+                                                       remark.ActionType == "Reject" ? "times" : "comment")"></i>
+                                </div>
+                                <div class="timeline-panel">
+                                    <div class="timeline-heading">
+                                        <h5 class="timeline-title">@remark.ActionType</h5>
+                                        <p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-user"></i> @remark.Employee?.FullName |
+                                                <i class="fas fa-clock"></i> @remark.CreatedAt.ToString("MM/dd/yyyy HH:mm")
+                                            </small>
+                                        </p>
+                                    </div>
+                                    <div class="timeline-body">
+                                        <p>@remark.Remark</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (canAct)
+    {
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5>Take Action</h5>
+                </div>
+                <div class="card-body">
+                    <form id="actionForm">
+                        <input type="hidden" id="workflowId" value="@Model.Id" />
+                        <input type="hidden" id="userId" value="@currentUserId" />
+                        
+                        <div class="form-group mb-3">
+                            <label>Action Type</label>
+                            <select id="actionType" class="form-control">
+                                <option value="Receive">Receive</option>
+                                <option value="Approve">Approve</option>
+                                <option value="Reject">Reject</option>
+                                <option value="Complete">Complete</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label>Remarks</label>
+                            <textarea id="remark" class="form-control" rows="3" required></textarea>
+                        </div>
+                        
+                        <button type="button" onclick="submitAction()" class="btn btn-primary w-100">
+                            Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function submitAction() {
+            var workflowId = $('#workflowId').val();
+            var userId = $('#userId').val();
+            var actionType = $('#actionType').val();
+            var remark = $('#remark').val();
+            
+            if (!remark) {
+                alert('Please enter remarks');
+                return;
+            }
+            
+            $.ajax({
+                url: '/UserDashboard/AddRemark',
+                type: 'POST',
+                data: {
+                    workflowId: workflowId,
+                    userId: userId,
+                    actionType: actionType,
+                    remark: remark
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Error: ' + error);
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-badge {
+        position: absolute;
+        left: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 40px;
+        color: white;
+    }
+    
+    .timeline-panel {
+        margin-left: 60px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .timeline-title {
+        margin-top: 0;
+        margin-bottom: 5px;
+    }
+</style>

@@ -16,32 +16,15 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="FileId" />
             <input type="hidden" asp-for="WorkflowNumber" value="@ViewBag.WorkflowNumber" />
+            <input type="hidden" asp-for="FromEmployeeId" />
+            <input type="hidden" asp-for="FromDepartment" />
 
             <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="FromDepartment" class="fw-bold"></label>
-                        <select asp-for="FromDepartment" class="form-control" asp-items="ViewBag.Departments" required>
-                            <option value="">Select Department</option>
-                        </select>
-                    </div>
-                </div>
                 <div class="col-md-6">
                     <div class="form-group mb-3">
                         <label asp-for="ToDepartment" class="fw-bold"></label>
                         <select asp-for="ToDepartment" class="form-control" asp-items="ViewBag.Departments" required>
                             <option value="">Select Department</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="FromEmployeeId" class="fw-bold">From Employee</label>
-                        <select asp-for="FromEmployeeId" class="form-control" asp-items="ViewBag.Employees" required>
-                            <option value="">Select Employee</option>
                         </select>
                     </div>
                 </div>

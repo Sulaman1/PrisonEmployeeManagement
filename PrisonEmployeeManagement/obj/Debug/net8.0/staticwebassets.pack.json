@@ -245,8 +245,24 @@
       "PackagePath": "staticwebassets/lib/jquery/dist/jquery.min.map"
     },
     {
+      "Id": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/uploads/efiles/FILE-20260403-5090_20260403041725_NetworkHack.txt",
+      "PackagePath": "staticwebassets/uploads/efiles/FILE-20260403-5090_20260403041725_NetworkHack.txt"
+    },
+    {
       "Id": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/uploads/efiles/FILE-20260403-8106_20260403033909_NetworkHack.txt",
       "PackagePath": "staticwebassets/uploads/efiles/FILE-20260403-8106_20260403033909_NetworkHack.txt"
+    },
+    {
+      "Id": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/uploads/efiles/FILE-20260404-3805_20260404024531_NetworkHack.txt",
+      "PackagePath": "staticwebassets/uploads/efiles/FILE-20260404-3805_20260404024531_NetworkHack.txt"
+    },
+    {
+      "Id": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/uploads/efiles/FILE-20260405-7795_20260405160554_NetworkHack.txt",
+      "PackagePath": "staticwebassets/uploads/efiles/FILE-20260405-7795_20260405160554_NetworkHack.txt"
+    },
+    {
+      "Id": "/home/sulaman/PrisonEmployeeManagement/PrisonEmployeeManagement/wwwroot/uploads/efiles/FILE-20260405-8317_20260405172100_NetworkHack.txt",
+      "PackagePath": "staticwebassets/uploads/efiles/FILE-20260405-8317_20260405172100_NetworkHack.txt"
     },
     {
       "Id": "obj/Debug/net8.0/staticwebassets/msbuild.PrisonEmployeeManagement.Microsoft.AspNetCore.StaticWebAssets.props",

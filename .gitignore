@@ -1,0 +1,223 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio files
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Visual Studio Code files
+.vscode/
+*.code-workspace
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
+*.mdf
+*.ldf
+PrisonEmployeeDB.db
+PrisonEmployeeDB_Dev.db
+*.sqlite
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Log files
+*.log
+logs/
+*.logs
+serilog-config.json
+
+# User secrets
+secrets.json
+appsettings.Secrets.json
+appsettings.*.Secrets.json
+*secrets*.json
+
+# Entity Framework
+Migrations/Generated/
+*.efbundle
+
+# Package Manager Console
+*.nupkg
+*.snupkg
+*.s symbols.nupkg
+
+# Temp files
+*.tmp
+*.temp
+*.cache
+*.pid
+*.seed
+*.pid.lock
+
+# Web files
+wwwroot/lib/
+wwwroot/css/site.css
+wwwroot/js/site.js
+
+# Publish profiles
+*.pubxml
+*.publishproj
+*.pubxml.user
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+*.coveragexml
+*.coverlet
+*.VisualState.xml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+!packages/repositories.config
+
+# Diagnostic files
+*.diagsession
+*.etl
+
+# IDE specific
+*.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.DS_Store
+
+# Azure Functions
+bin/
+obj/
+*.lock.json
+local.settings.json
+
+# ASP.NET Core
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+launchSettings.json
+Properties/launchSettings.json
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Angular
+*.ngfactory.js
+*.ngsummary.js
+
+# React
+.eslintcache
+build/
+
+# Docker
+docker-compose.override.yml
+*.dockerignore
+
+# Linux specific
+*.swp
+.*.swp
+*~
+
+# Mac specific
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows specific
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Uploaded files (exclude from git but keep folder structure)
+wwwroot/uploads/
+!wwwroot/uploads/.gitkeep
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Code coverage
+coverage/
+coverage.json
+*.coverlet
+
+# Publish output
+/publish/
+*.deploy.cmd
+*.deploy-readme.md
+*.deploy.cmd
+*.deploy-readme.md
+
+# Cake
+/tools/
+!tools/packages.config
+
+# Paket
+.paket/
+paket-files/
+
+# FAKE
+FakeDotnet.dll
+fake.exe
+
+# Benchmark results
+BenchmarkDotNet.Artifacts/
+
+# CodeRush
+.cr/
+
+# Mono
+mono_crash.*

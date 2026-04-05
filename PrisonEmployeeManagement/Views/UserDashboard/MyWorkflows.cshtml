@@ -1,0 +1,148 @@
+@model IEnumerable<PrisonEmployeeManagement.Models.FileWorkflow>
+@{
+    ViewData["Title"] = "My Workflows";
+    int userId = ViewBag.UserId ?? 0;
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3><i class="fas fa-tasks"></i> All My Workflows</h3>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#inbox">Inbox</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#sent">Sent</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#all">All</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Inbox Tab -->
+            <div class="tab-pane fade show active" id="inbox">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Workflow #</th>
+                                <th>From</th>
+                                <th>Subject</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Sent Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Where(w => w.ToEmployeeId == userId))
+                            {
+                                <tr class="@(item.IsUrgent ? "table-danger" : "")">
+                                    <td>@item.WorkflowNumber</td>
+                                    <td>@item.FromEmployee?.FullName</td>
+                                    <td>@item.Subject</td>
+                                    <td>@item.Priority</td>
+                                    <td>
+                                        <span class="badge bg-@(item.Status == "Completed" ? "success" : 
+                                                              item.Status == "Pending" ? "warning" : "info")">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td>@item.SentDate.ToString("MM/dd/yyyy")</td>
+                                    <td>
+                                        <a asp-action="WorkflowDetails" asp-route-id="@item.Id" asp-route-userId="@userId"
+                                           class="btn btn-sm btn-info">View Details</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sent Tab -->
+            <div class="tab-pane fade" id="sent">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Workflow #</th>
+                                <th>To</th>
+                                <th>Subject</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Sent Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Where(w => w.FromEmployeeId == userId))
+                            {
+                                <tr>
+                                    <td>@item.WorkflowNumber</td>
+                                    <td>@item.ToEmployee?.FullName</td>
+                                    <td>@item.Subject</td>
+                                    <td>@item.Priority</td>
+                                    <td>
+                                        <span class="badge bg-@(item.Status == "Completed" ? "success" : "secondary")">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td>@item.SentDate.ToString("MM/dd/yyyy")</td>
+                                    <td>
+                                        <a asp-action="WorkflowDetails" asp-route-id="@item.Id" asp-route-userId="@userId"
+                                           class="btn btn-sm btn-info">Track</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- All Tab -->
+            <div class="tab-pane fade" id="all">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Workflow #</th>
+                                <th>From → To</th>
+                                <th>Subject</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Sent Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.WorkflowNumber</td
+                                    <td>@item.FromEmployee?.FullName → @item.ToEmployee?.FullName</td
+                                    <td>@item.Subject</td
+                                    <td>@item.Priority</td
+                                    <td>
+                                        <span class="badge bg-@(item.Status == "Completed" ? "success" : 
+                                                              item.Status == "Pending" ? "warning" : "info")">
+                                            @item.Status
+                                        </span>
+                                     </td
+                                    <td>@item.SentDate.ToString("MM/dd/yyyy")</td
+                                    <td>
+                                        <a asp-action="WorkflowDetails" asp-route-id="@item.Id" asp-route-userId="@userId"
+                                           class="btn btn-sm btn-info">View</a>
+                                     </td
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

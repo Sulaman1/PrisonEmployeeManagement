@@ -1,0 +1,308 @@
+@{
+    ViewData["Title"] = "My Dashboard";
+    var employee = ViewBag.Employee as PrisonEmployeeManagement.Models.Employee;
+    var stats = ViewBag.Stats as Dictionary<string, int>;
+    var receivedWorkflows = ViewBag.ReceivedWorkflows as IEnumerable<PrisonEmployeeManagement.Models.FileWorkflow>;
+    var sentWorkflows = ViewBag.SentWorkflows as IEnumerable<PrisonEmployeeManagement.Models.FileWorkflow>;
+    var notifications = ViewBag.Notifications as IEnumerable<PrisonEmployeeManagement.Models.Notification>;
+}
+
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h2>Welcome, @employee?.FullName</h2>
+                    <p>Employee ID: @employee?.EmployeeNumber | Department: @employee?.Department | Position: @employee?.Position</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Inbox</h5>
+                    <h2>@(stats?.GetValueOrDefault("Inbox", 0))</h2>
+                    <small>Files to review</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Sent</h5>
+                    <h2>@(stats?.GetValueOrDefault("Sent", 0))</h2>
+                    <small>Files sent</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5>Pending</h5>
+                    <h2>@(stats?.GetValueOrDefault("Pending", 0))</h2>
+                    <small>Awaiting action</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <h5>In Progress</h5>
+                    <h2>@(stats?.GetValueOrDefault("InProgress", 0))</h2>
+                    <small>Being processed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h5>Completed</h5>
+                    <h2>@(stats?.GetValueOrDefault("Completed", 0))</h2>
+                    <small>Closed files</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5>Urgent</h5>
+                    <h2>@(stats?.GetValueOrDefault("Urgent", 0))</h2>
+                    <small>Needs attention</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Received Workflows (Inbox) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-inbox"></i> Files Received (Inbox)</h5>
+                </div>
+                <div class="card-body">
+                    @if (receivedWorkflows != null && receivedWorkflows.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Workflow #</th>
+                                        <th>From</th>
+                                        <th>Subject</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in receivedWorkflows)
+                                    {
+                                        <tr class="@(item.IsUrgent ? "table-danger" : "")">
+                                            <td>@item.WorkflowNumber</td>
+                                            <td>@item.FromEmployee?.FullName</td>
+                                            <td>@item.Subject</td>
+                                            <td>
+                                                @if (item.Priority == "Urgent")
+                                                {
+                                                    <span class="badge bg-danger">Urgent</span>
+                                                }
+                                                else if (item.Priority == "High")
+                                                {
+                                                    <span class="badge bg-warning">High</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-info">@item.Priority</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning">Pending</span>
+                                                }
+                                                else if (item.Status == "In Progress")
+                                                {
+                                                    <span class="badge bg-info">In Progress</span>
+                                                }
+                                                else if (item.Status == "Approved")
+                                                {
+                                                    <span class="badge bg-success">Approved</span>
+                                                }
+                                                else if (item.Status == "Rejected")
+                                                {
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                }
+                                                else if (item.Status == "Closed")
+                                                {
+                                                    <span class="badge bg-secondary">Closed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@item.Status</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="Workflow" asp-action="Details" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-2">
+                            <a asp-controller="Workflow" asp-action="Inbox" class="btn btn-link">View All Received Files →</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No files received yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sent Workflows -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="fas fa-paper-plane"></i> Files Sent</h5>
+                </div>
+                <div class="card-body">
+                    @if (sentWorkflows != null && sentWorkflows.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Workflow #</th>
+                                        <th>To</th>
+                                        <th>Subject</th>
+                                        <th>Status</th>
+                                        <th>Sent Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in sentWorkflows)
+                                    {
+                                        <tr>
+                                            <td>@item.WorkflowNumber</td>
+                                            <td>@item.ToEmployee?.FullName</td>
+                                            <td>@item.Subject</td>
+                                            <td>
+                                                <span class="badge bg-@(item.Status == "Completed" ? "success" : "secondary")">
+                                                    @item.Status
+                                                </span>
+                                            </td>
+                                            <td>@item.SentDate.ToString("MM/dd/yyyy")</td>
+                                            <td>
+                                                <a asp-controller="Workflow" asp-action="Track" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-info">
+                                                    <i class="fas fa-chart-line"></i> Track
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-2">
+                            <a asp-controller="Workflow" asp-action="Sent" class="btn btn-link">View All Sent Files →</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No files sent yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Section -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-bell"></i> Recent Notifications 
+                        @if (ViewBag.UnreadCount > 0)
+                        {
+                            <span class="badge bg-danger">@ViewBag.UnreadCount New</span>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (notifications != null && notifications.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var notification in notifications)
+                            {
+                                <div class="list-group-item @(notification.IsRead ? "" : "list-group-item-primary")">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>@notification.Title</strong>
+                                            <p class="mb-1">@notification.Message</p>
+                                            <small class="text-muted">@notification.CreatedAt.ToString("MM/dd/yyyy HH:mm")</small>
+                                        </div>
+                                        <div>
+                                            @if (!notification.IsRead)
+                                            {
+                                                <a asp-controller="Notification" asp-action="MarkAsRead" asp-route-id="@notification.Id" 
+                                                   class="btn btn-sm btn-success">Mark Read</a>
+                                            }
+                                            @if (notification.WorkflowId.HasValue)
+                                            {
+                                                <a asp-controller="Workflow" asp-action="Details" asp-route-id="@notification.WorkflowId" 
+                                                   class="btn btn-sm btn-info">View File</a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="mt-3">
+                            <a asp-controller="Notification" asp-action="Index" class="btn btn-primary">View All Notifications</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No notifications yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a asp-controller="EFiles" asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Upload New File
+                    </a>
+                    <a asp-controller="Workflow" asp-action="Inbox" class="btn btn-info">
+                        <i class="fas fa-inbox"></i> View Full Inbox
+                    </a>
+                    <a asp-controller="Workflow" asp-action="Dashboard" class="btn btn-success">
+                        <i class="fas fa-chart-line"></i> Workflow Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

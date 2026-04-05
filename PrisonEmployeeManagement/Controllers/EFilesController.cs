@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PrisonEmployeeManagement.Data;
 using PrisonEmployeeManagement.Models;
+using Microsoft.AspNetCore.Identity;
+using PrisonEmployeeManagement.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PrisonEmployeeManagement.Controllers
 {
@@ -11,15 +15,41 @@ namespace PrisonEmployeeManagement.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<EFilesController> _logger;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly INotificationService _notificationService;
 
         public EFilesController(
             ApplicationDbContext context,
             IWebHostEnvironment webHostEnvironment,
-            ILogger<EFilesController> logger)
+            ILogger<EFilesController> logger,
+            UserManager<ApplicationUser> userManager,   
+            INotificationService notificationService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
             _logger = logger;
+            _userManager = userManager; 
+            _notificationService = notificationService;
+        }
+        // Helper method to get current employee ID
+        private async Task<int?> GetCurrentEmployeeId()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                return user.EmployeeId;
+            }
+            return null;
+        }
+        // Helper method to get current user name
+        private async Task<string> GetCurrentUserName()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                return $"{user.FirstName} {user.LastName}".Trim();
+            }
+            return "System";
         }
 
         // GET: EFiles
@@ -178,7 +208,7 @@ namespace PrisonEmployeeManagement.Controllers
 
                         eFile.FilePath = $"/uploads/efiles/{uniqueFileName}";
                         eFile.FileType = Path.GetExtension(uploadedFile.FileName).ToUpper();
-                        eFile.FileSize = uploadedFile.Length / 1024; // Size in KB
+                        eFile.FileSize = uploadedFile.Length / 1024;
                     }
 
                     eFile.CreatedAt = DateTime.Now;
@@ -189,7 +219,71 @@ namespace PrisonEmployeeManagement.Controllers
                     _context.Add(eFile);
                     await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = "File uploaded successfully!";
+                    // IMPORTANT: Create workflow if employee is selected
+                    if (eFile.EmployeeId.HasValue)
+                    {
+                        var currentEmployee = await GetCurrentEmployee();
+                        var targetEmployee = await _context.Employees.FindAsync(eFile.EmployeeId.Value);
+                        
+                        if (currentEmployee != null && targetEmployee != null)
+                        {
+                            // Create workflow for this file
+                            var workflow = new FileWorkflow
+                            {
+                                FileId = eFile.Id,
+                                WorkflowNumber = $"WF-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}",
+                                FromDepartment = currentEmployee.Department ?? "Unknown",
+                                ToDepartment = targetEmployee.Department ?? "Unknown",
+                                FromEmployeeId = currentEmployee.Id,
+                                ToEmployeeId = targetEmployee.Id,
+                                Subject = eFile.FileTitle,
+                                Description = eFile.Description ?? "Please review this file.",
+                                Status = "Pending",
+                                Priority = "Medium",
+                                SentDate = DateTime.Now,
+                                DueDate = DateTime.Now.AddDays(7),
+                                CreatedAt = DateTime.Now,
+                                UpdatedAt = DateTime.Now
+                            };
+                            
+                            _context.FileWorkflows.Add(workflow);
+                            await _context.SaveChangesAsync();
+                            
+                            // Add initial remark
+                            var remark = new FileWorkflowRemark
+                            {
+                                WorkflowId = workflow.Id,
+                                EmployeeId = currentEmployee.Id,
+                                Remark = $"File '{eFile.FileTitle}' has been created and assigned to you for review.",
+                                ActionType = "Send",
+                                CreatedAt = DateTime.Now
+                            };
+                            _context.FileWorkflowRemarks.Add(remark);
+                            await _context.SaveChangesAsync();
+                            
+                            // Send notification to target employee
+                            if (_notificationService != null)
+                            {
+                                await _notificationService.NotifyFileReceived(
+                                    targetEmployee.Id,
+                                    currentEmployee.Id,
+                                    workflow.Id,
+                                    eFile.FileTitle
+                                );
+                            }
+                            
+                            TempData["SuccessMessage"] = $"File uploaded and workflow created! Workflow Number: {workflow.WorkflowNumber}";
+                        }
+                        else
+                        {
+                            TempData["SuccessMessage"] = "File uploaded successfully!";
+                        }
+                    }
+                    else
+                    {
+                        TempData["SuccessMessage"] = "File uploaded successfully!";
+                    }
+                    
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -200,7 +294,7 @@ namespace PrisonEmployeeManagement.Controllers
             }
 
             // Repopulate dropdowns
-            ViewBag.Employees = new SelectList(await _context.Employees.Select(e => new { e.Id, e.FullName }).ToListAsync(), "Id", "FullName", eFile.EmployeeId);
+            ViewBag.Employees = new SelectList(await _context.Employees.Select(e => new { e.Id, e.FullName, e.Email }).ToListAsync(), "Id", "FullName", eFile.EmployeeId);
             ViewBag.Categories = new SelectList(new[] { "Personnel", "Disciplinary", "Training", "Medical", "Contract", "Security", "Incident", "Legal" }, eFile.Category);
             ViewBag.ConfidentialLevels = new SelectList(new[] { "Public", "Internal", "Confidential", "Secret", "Top Secret" }, eFile.ConfidentialLevel);
             ViewBag.Statuses = new SelectList(new[] { "Active", "Archived" }, eFile.Status);
@@ -208,6 +302,32 @@ namespace PrisonEmployeeManagement.Controllers
             return View(eFile);
         }
 
+        // Helper method to get current employee
+        private async Task<Employee?> GetCurrentEmployee()
+        {
+            try
+            {
+                var userEmail = User.Identity?.Name;
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    return null;
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+                if (user == null || !user.EmployeeId.HasValue)
+                {
+                    return null;
+                }
+
+                return await _context.Employees.FindAsync(user.EmployeeId.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current employee");
+                return null;
+            }
+        }
+            
         // GET: EFiles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {

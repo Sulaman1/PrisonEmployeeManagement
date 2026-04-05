@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using PrisonEmployeeManagement.Models;
@@ -5,6 +6,7 @@ using PrisonEmployeeManagement.Services;
 
 namespace PrisonEmployeeManagement.Controllers
 {
+    [Authorize]
     public class EmployeesController : Controller
     {
         private readonly IEmployeeService _employeeService;

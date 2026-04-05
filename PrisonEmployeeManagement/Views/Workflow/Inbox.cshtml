@@ -1,8 +1,6 @@
 @model IEnumerable<PrisonEmployeeManagement.Models.FileWorkflow>
 @{
     ViewData["Title"] = "Inbox";
-    int employeeId = ViewBag.EmployeeId ?? 0;
-    string currentStatus = ViewBag.CurrentStatus ?? "Pending";
 }
 
 <div class="card">
@@ -15,28 +13,16 @@
             <div class="alert alert-success">@TempData["SuccessMessage"]</div>
         }
 
-        <div class="row mb-3">
-            <div class="col-md-3">
-                <form method="get" asp-action="Inbox">
-                    <input type="hidden" name="employeeId" value="@employeeId" />
-                    <select name="status" class="form-control" asp-items="ViewBag.Statuses" onchange="this.form.submit()">
-                        <option value="">Filter by Status</option>
-                    </select>
-                </form>
-            </div>
-        </div>
-
         <div class="table-responsive">
             <table class="table table-bordered table-hover">
                 <thead class="table-dark">
                     <tr>
                         <th>Workflow #</th>
-                        <th>File</th>
                         <th>From</th>
                         <th>Subject</th>
                         <th>Priority</th>
                         <th>Status</th>
-                        <th>Sent Date</th>
+                        <th>Received</th>
                         <th>Due Date</th>
                         <th>Actions</th>
                     </tr>
@@ -44,11 +30,10 @@
                 <tbody>
                     @foreach (var item in Model)
                     {
-                        <tr class="@(item.IsUrgent ? "table-danger" : item.DueDate < DateTime.Today ? "table-warning" : "")">
-                            <td>@item.WorkflowNumber</td
-                            <td>@item.File?.FileNumber</td
-                            <td>@item.FromEmployee?.FullName</td
-                            <td>@item.Subject</td
+                        <tr class="@(item.IsUrgent ? "table-danger" : "")">
+                            <td>@item.WorkflowNumber</td>
+                            <td>@item.FromEmployee?.FullName</td>
+                            <td>@item.Subject</td>
                             <td>
                                 @if (item.Priority == "Urgent")
                                 {
@@ -62,7 +47,7 @@
                                 {
                                     <span class="badge bg-info">@item.Priority</span>
                                 }
-                             </td
+                            </td>
                             <td>
                                 @if (item.Status == "Pending")
                                 {
@@ -80,12 +65,16 @@
                                 {
                                     <span class="badge bg-danger">Rejected</span>
                                 }
+                                else if (item.Status == "Closed")
+                                {
+                                    <span class="badge bg-secondary">Closed</span>
+                                }
                                 else
                                 {
                                     <span class="badge bg-secondary">@item.Status</span>
                                 }
-                             </td
-                            <td>@item.SentDate.ToString("MM/dd/yyyy")</td
+                            </td>
+                            <td>@item.SentDate.ToString("MM/dd/yyyy")</td>
                             <td>
                                 @if (item.DueDate.HasValue)
                                 {
@@ -93,26 +82,27 @@
                                         @item.DueDate.Value.ToString("MM/dd/yyyy")
                                     </span>
                                 }
-                             </td
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+                            </td>
                             <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a asp-action="Track" asp-route-id="@item.Id" class="btn btn-secondary" title="Track">
-                                        <i class="fas fa-chart-line"></i>
-                                    </a>
-                                </div>
-                             </td
-                         </tr>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
                     }
                 </tbody>
-             </table>
+            </table>
         </div>
 
         @if (!Model.Any())
         {
-            <div class="alert alert-info text-center">No files in your inbox.</div>
+            <div class="alert alert-info text-center">
+                <i class="fas fa-inbox"></i> No files in your inbox.
+            </div>
         }
     </div>
 </div>

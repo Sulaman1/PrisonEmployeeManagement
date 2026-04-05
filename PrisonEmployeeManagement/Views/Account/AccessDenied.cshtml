@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="text-center">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h3><i class="fas fa-exclamation-triangle"></i> Access Denied</h3>
+        </div>
+        <div class="card-body">
+            <h4>You don't have permission to access this page.</h4>
+            <p>Please contact your administrator if you believe this is an error.</p>
+            <a asp-controller="UserDashboard" asp-action="Index" class="btn btn-primary">
+                <i class="fas fa-home"></i> Go to Dashboard
+            </a>
+        </div>
+    </div>
+</div>

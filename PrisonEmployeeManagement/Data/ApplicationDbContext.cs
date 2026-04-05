@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PrisonEmployeeManagement.Models;
 
 namespace PrisonEmployeeManagement.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -20,6 +21,14 @@ namespace PrisonEmployeeManagement.Data
         public DbSet<FileAccessLog> FileAccessLogs { get; set; }
         public DbSet<FileWorkflow> FileWorkflows { get; set; }
         public DbSet<FileWorkflowRemark> FileWorkflowRemarks { get; set; }
+
+        // Role and Permission related DbSets
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<UserDashboard> UserDashboards { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -185,7 +194,89 @@ namespace PrisonEmployeeManagement.Data
                     .HasForeignKey(e => e.EmployeeId)
                     .OnDelete(DeleteBehavior.Restrict);  // Changed from Cascade to Restrict
             });
+            // Configure Role entity
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.HasIndex(e => e.RoleName).IsUnique();
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETDATE()");
+            });
             
+            // Configure Permission entity
+            modelBuilder.Entity<Permission>(entity =>
+            {
+                entity.HasIndex(e => e.PermissionName).IsUnique();
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
+            });
+
+            // Configure UserRole entity
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.RoleId }).IsUnique();
+                entity.Property(e => e.AssignedDate).HasDefaultValueSql("GETDATE()");
+                
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(e => e.Role)
+                    .WithMany(r => r.UserRoles)
+                    .HasForeignKey(e => e.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+                        // Configure RolePermission entity
+            modelBuilder.Entity<RolePermission>(entity =>
+            {
+                entity.HasIndex(e => new { e.RoleId, e.PermissionId }).IsUnique();
+                entity.Property(e => e.CanView).HasDefaultValue(true);
+                entity.Property(e => e.CanCreate).HasDefaultValue(false);
+                entity.Property(e => e.CanEdit).HasDefaultValue(false);
+                entity.Property(e => e.CanDelete).HasDefaultValue(false);
+                entity.Property(e => e.CanApprove).HasDefaultValue(false);
+                
+                entity.HasOne(e => e.Role)
+                    .WithMany(r => r.RolePermissions)
+                    .HasForeignKey(e => e.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(e => e.Permission)
+                    .WithMany()                    
+                    .HasForeignKey(e => e.PermissionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+                        // Configure UserDashboard entity
+            modelBuilder.Entity<UserDashboard>(entity =>
+            {
+                entity.HasIndex(e => e.UserId).IsUnique();
+                entity.Property(e => e.LoginCount).HasDefaultValue(0);
+                
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure Identity tables to use your schema
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
+                entity.ToTable("AspNetUsers");
+                entity.HasIndex(e => e.EmployeeId).IsUnique(false);
+            });
+
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.IsRead);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
+                
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
             // Seed initial data
             modelBuilder.Entity<Employee>().HasData(
                 new Employee

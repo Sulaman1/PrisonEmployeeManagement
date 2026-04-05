@@ -101,10 +101,67 @@
                             <li><a class="dropdown-item" asp-controller="Workflow" asp-action="Sent">Sent Items</a></li>
                         </ul>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" asp-controller="Notification" asp-action="Index" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span id="notificationCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 10px;">
+                                0
+                            </span>
+                        </a>
+                    </li>
+
+                    @if (User.Identity.IsAuthenticated) // Or use session
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="UserDashboard" asp-action="Index">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
     </nav>
+    <!-- Add this to the navbar after the nav items -->
+    <ul class="navbar-nav ms-auto">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-circle"></i> @User.Identity.Name
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                        <i class="fas fa-id-card"></i> My Profile
+                    </a></li>
+                    <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
+                        <i class="fas fa-key"></i> Change Password
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="dropdown-item">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Account" asp-action="Login">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Account" asp-action="Register">
+                    <i class="fas fa-user-plus"></i> Register
+                </a>
+            </li>
+        }
+    </ul>
     
     <main>
         <div class="container-fluid">
@@ -123,3 +180,23 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+<script>
+    function loadNotificationCount() {
+        $.get('/Notification/UnreadCount', function(data) {
+            if (data.count > 0) {
+                $('#notificationCount').text(data.count);
+                $('#notificationCount').show();
+            } else {
+                $('#notificationCount').hide();
+            }
+        }).fail(function() {
+            console.log('Failed to load notification count');
+        });
+    }
+    $(document).ready(function() {
+        loadNotificationCount();
+        // Refresh every 30 seconds
+        setInterval(loadNotificationCount, 30000);
+    });
+</script>

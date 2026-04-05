@@ -175,9 +175,6 @@ namespace PrisonEmployeeManagement.Models
         [StringLength(100)]
         public string? LastModifiedBy { get; set; }
 
-        [Timestamp]
-        public byte[]? RowVersion { get; set; }
-
         // Navigation Properties
         public virtual ICollection<EmployeeConduct> ConductRecords { get; set; } = new List<EmployeeConduct>();
         public virtual ICollection<EmployeePosting> Postings { get; set; } = new List<EmployeePosting>();
